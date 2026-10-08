@@ -1,11 +1,11 @@
-﻿function createElement(tag, className, text) {
+function createElement(tag, className, text) {
     const node = document.createElement(tag);
     if (className) node.className = className;
     if (text !== undefined) node.textContent = text;
     return node;
 }
 
-export function renderCard({ currentCard, categoryNames, levelNames, elements }) {
+export function renderCard({ currentCard, categoryNames, levelNames, progress, elements }) {
     const {
         emptyState,
         cardContent,
@@ -17,21 +17,35 @@ export function renderCard({ currentCard, categoryNames, levelNames, elements })
     } = elements;
 
     if (!currentCard) {
-        emptyState.style.display = 'block';
-        cardContent.style.display = 'none';
-        saveBtn.style.display = 'none';
-        shareBtn.style.display = 'none';
+        emptyState.hidden = false;
+        cardContent.hidden = true;
+        saveBtn.hidden = true;
+        shareBtn.hidden = true;
         return;
     }
 
-    emptyState.style.display = 'none';
-    cardContent.style.display = 'block';
+    emptyState.hidden = true;
+    cardContent.hidden = false;
     cardCategory.textContent = categoryNames[currentCard.category] || currentCard.category;
     cardLevel.textContent = levelNames[String(currentCard.level)] || `第${currentCard.level}级`;
     cardLevel.className = `card-level level-${currentCard.level}`;
     cardQuestion.textContent = currentCard.question;
-    saveBtn.style.display = 'inline-block';
-    shareBtn.style.display = 'inline-block';
+    saveBtn.hidden = false;
+    shareBtn.hidden = false;
+
+    renderProgress(progress, elements);
+}
+
+export function renderProgress(progress, elements) {
+    const node = elements.cardProgress;
+    if (!node) return;
+
+    if (!progress) {
+        node.textContent = '';
+        return;
+    }
+
+    node.textContent = `本轮第 ${progress.drawn} / ${progress.total} 张`;
 }
 
 export function renderHistory({ history, levelNames, historyList }) {

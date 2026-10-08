@@ -97,6 +97,19 @@ def build() -> Path:
     html = re.sub(r'<link rel="stylesheet" href="\.\./shared/theme\.css">\s*', "", html)
     html = re.sub(r"<script>[\s\S]*?loadAppScript[\s\S]*?</script>\s*", "", html)
     html = re.sub(r'<script src="\./src/pwa\.js"></script>\s*', "", html)
+    # 单文件包内这些引用全是死链：模块文件、manifest、图标都不随包发出
+    html = re.sub(r'<script type="module" src="[^"]*"></script>\s*', "", html)
+    html = re.sub(r'<link rel="manifest" href="[^"]*">\s*', "", html)
+    html = re.sub(r'<link rel="apple-touch-icon" href="[^"]*">\s*', "", html)
+    # 首页的「下载离线包」按钮指向产物自身，在单文件包里没有意义
+    html = re.sub(
+        r'<a\b[^>]*class="[^"]*download-offline[^"]*"[^>]*>[\s\S]*?</a>\s*',
+        "",
+        html,
+        count=1,
+    )
+    # 首屏防闪脚本引用 localStorage 里的主题键，单文件包里保留即可；
+    # 但它的 data-theme 初值会被内联脚本覆盖，无需特殊处理。
 
     banner = """
     <div class="container" style="padding-bottom:0">

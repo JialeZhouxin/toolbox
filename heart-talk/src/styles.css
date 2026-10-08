@@ -47,11 +47,36 @@ header {
 .theme-switch-wrap {
     display: flex;
     justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
     margin-bottom: 10px;
 }
 .theme-toggle-btn {
     min-width: 104px;
     padding-inline: 14px;
+}
+/* 「下载离线包」是个 <a>，共用 .filter-btn 外观 */
+.download-offline {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+/* 难度筛选与类型筛选之间的间距（原先是行内 style） */
+.level-filters {
+    margin-top: 15px;
+}
+
+/* 历史区的「清空」比普通筛选按钮小一号 */
+.clear-history-btn {
+    font-size: 0.8rem;
+    padding: 5px 12px;
+    min-height: 32px;
+}
+
+.modal-subtitle {
+    margin-bottom: 15px;
+    color: var(--text-muted);
 }
 
 header h1 {
@@ -111,6 +136,11 @@ header p {
     min-height: 40px;
     cursor: pointer;
     transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.18s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+/* JS 按「该类别下有没有三级卡」隐藏按钮，需要能盖过 flex 布局 */
+.filter-btn[hidden] {
+    display: none;
 }
 
 .filter-btn:hover,
@@ -206,6 +236,13 @@ header p {
     color: #422c1a;
 }
 
+/* 本轮进度：让「不重复抽完一轮」这件事可见 */
+.card-progress {
+    margin-top: 14px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+}
+
 .controls {
     display: flex;
     justify-content: center;
@@ -224,6 +261,9 @@ header p {
     font-weight: 600;
     cursor: pointer;
     letter-spacing: 0.02em;
+    background: linear-gradient(160deg, var(--accent) 0%, var(--accent-strong) 100%);
+    color: #fff;
+    box-shadow: 0 8px 18px rgba(166, 98, 38, 0.3);
     transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease, filter 0.2s ease;
 }
 
@@ -233,12 +273,6 @@ header p {
 
 .btn:active {
     transform: translateY(0) scale(0.98);
-}
-
-.btn {
-    background: linear-gradient(160deg, var(--accent) 0%, var(--accent-strong) 100%);
-    color: #fff;
-    box-shadow: 0 8px 18px rgba(166, 98, 38, 0.3);
 }
 
 .btn-secondary {
@@ -661,6 +695,16 @@ header p {
 :root[data-theme='dark'] .history-section h3 { color: #ecd2b5; }
 :root[data-theme='dark'] .card-category { color: #d4b493; }
 :root[data-theme='dark'] .card-question { color: #f7e7d2; }
+:root[data-theme='dark'] .card-progress { color: #c1a88d; }
+:root[data-theme='dark'] .download-offline {
+    background: #3a3027;
+    color: #ecd2b5;
+    border-color: #6a523b;
+}
+:root[data-theme='dark'] .download-offline:hover {
+    background: linear-gradient(160deg, #d3955a 0%, #be7736 100%);
+    color: #fff;
+}
 :root[data-theme='dark'] .history-item { border-color: #66513d; }
 :root[data-theme='dark'] .history-item .question { color: #efd9bf; }
 :root[data-theme='dark'] .history-item .answer {

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -15,14 +15,25 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../shared/theme.css">
     <link rel="stylesheet" href="./src/styles.css">
+    <script>
+        // 首屏防闪：主题必须在 CSS 生效前定好，否则深色用户会先看到一帧暖色。
+        // 这里只设 data-theme，业务逻辑仍由 src/main.js 负责。
+        (function () {
+            var t = null;
+            try {
+                t = localStorage.getItem('heartTalkTheme') || localStorage.getItem('toolbox-theme');
+            } catch (e) {}
+            document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
+        })();
+    </script>
 </head>
 <body>
     <div class="container">
         <header>
             <a class="back-link" href="../">← 返回工具箱</a>
             <div class="theme-switch-wrap">
-                <a class="filter-btn" href="./heart-talk-cards-offline.html" download style="text-decoration:none;display:inline-flex;align-items:center;">下载离线包</a>
-                <button class="filter-btn theme-toggle-btn" id="themeToggleBtn" type="button" aria-label="切换夜间护眼模式">夜间护眼</button>
+                <a class="filter-btn download-offline" href="./heart-talk-cards-offline.html" download>下载离线包</a>
+                <button class="filter-btn theme-toggle-btn" id="themeToggleBtn" type="button" aria-label="切换夜间护眼模式" aria-pressed="false">夜间护眼</button>
             </div>
             <h1>心语卡牌</h1>
             <p>用问题打开话匣子，让彼此更靠近一点</p>
@@ -31,17 +42,17 @@
         <div class="filter-section">
             <h3>选择卡牌类型</h3>
             <div class="filter-buttons" id="categoryFilters">
-                <button class="filter-btn active" data-category="all">全部</button>
-                <button class="filter-btn" data-category="couple">情侣</button>
-                <button class="filter-btn" data-category="friend">朋友</button>
-                <button class="filter-btn" data-category="family">家庭</button>
-                <button class="filter-btn" data-category="self">自我</button>
+                <button class="filter-btn active" data-category="all" aria-pressed="true">全部</button>
+                <button class="filter-btn" data-category="couple" aria-pressed="false">情侣</button>
+                <button class="filter-btn" data-category="friend" aria-pressed="false">朋友</button>
+                <button class="filter-btn" data-category="family" aria-pressed="false">家庭</button>
+                <button class="filter-btn" data-category="self" aria-pressed="false">自我</button>
             </div>
-            <div class="filter-buttons" style="margin-top: 15px;" id="levelFilters">
-                <button class="filter-btn active" data-level="all">全部难度</button>
-                <button class="filter-btn" data-level="1">一级</button>
-                <button class="filter-btn" data-level="2">二级</button>
-                <button class="filter-btn" data-level="3">三级</button>
+            <div class="filter-buttons level-filters" id="levelFilters">
+                <button class="filter-btn active" data-level="all" aria-pressed="true">全部难度</button>
+                <button class="filter-btn" data-level="1" aria-pressed="false">一级</button>
+                <button class="filter-btn" data-level="2" aria-pressed="false">二级</button>
+                <button class="filter-btn" data-level="3" aria-pressed="false">三级</button>
             </div>
         </div>
 
@@ -50,25 +61,26 @@
                 <p>点击“抽取卡牌”开始对话</p>
                 <p>适合情侣、朋友、家庭与自我探索场景</p>
             </div>
-            <div id="cardContent" style="display: none;">
+            <div id="cardContent" class="card-content" hidden>
                 <div class="card-category" id="cardCategory"></div>
                 <div class="card-level" id="cardLevel"></div>
                 <div class="card-question" id="cardQuestion"></div>
+                <div class="card-progress" id="cardProgress"></div>
             </div>
         </div>
 
         <div class="controls">
             <button class="btn" id="drawBtn">抽取卡牌</button>
-            <button class="btn btn-secondary" id="saveBtn" style="display: none;">保存回答</button>
-            <button class="btn btn-secondary" id="shareBtn" style="display: none;">分享</button>
+            <button class="btn btn-secondary" id="saveBtn" hidden>保存回答</button>
+            <button class="btn btn-secondary" id="shareBtn" hidden>分享</button>
         </div>
 
         <div class="history-section">
             <h3>
                 对话历史
-                <button class="filter-btn" id="clearHistoryBtn" style="font-size: 0.8rem; padding: 5px 12px;">清空</button>
+                <button class="filter-btn clear-history-btn" id="clearHistoryBtn" type="button">清空</button>
             </h3>
-            <div class="history-list" id="historyList">
+            <div class="history-list" id="historyList" aria-live="polite">
                 <div class="empty-state">
                     <p>暂无对话记录</p>
                 </div>
@@ -76,19 +88,19 @@
         </div>
     </div>
 
-    <div class="modal" id="saveModal">
+    <div class="modal" id="saveModal" role="dialog" aria-modal="true" aria-labelledby="saveModalTitle">
         <div class="modal-content">
-            <h3>你的回答</h3>
-            <p id="saveModalQuestion" style="margin-bottom: 15px; color: #6b7280;"></p>
-            <textarea id="answerInput" placeholder="写下你的思考和感受..."></textarea>
+            <h3 id="saveModalTitle">你的回答</h3>
+            <p class="modal-subtitle" id="saveModalQuestion"></p>
+            <textarea id="answerInput" placeholder="写下你的思考和感受..." aria-label="你的回答"></textarea>
             <button class="btn" id="confirmSaveBtn">保存</button>
             <button class="btn btn-secondary" id="cancelSaveBtn">取消</button>
         </div>
     </div>
 
-    <div class="modal" id="shareModal">
+    <div class="modal" id="shareModal" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle">
         <div class="modal-content">
-            <h3>分享这张卡牌</h3>
+            <h3 id="shareModalTitle">分享这张卡牌</h3>
             <div class="share-preview" id="sharePreview">
                 <div class="question" id="shareQuestion"></div>
                 <div class="answer" id="shareAnswer"></div>
@@ -98,10 +110,10 @@
         </div>
     </div>
 
-    <div class="modal" id="confirmModal">
+    <div class="modal" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
         <div class="modal-content">
-            <h3>请确认操作</h3>
-            <p id="confirmMessage" style="margin-bottom: 16px; color: #6b7280;"></p>
+            <h3 id="confirmModalTitle">请确认操作</h3>
+            <p class="modal-subtitle" id="confirmMessage"></p>
             <div class="modal-actions">
                 <button class="btn btn-secondary" id="confirmCancelBtn">取消</button>
                 <button class="btn" id="confirmOkBtn">确认</button>

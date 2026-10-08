@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -7,10 +7,19 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="心语卡牌">
-    <link rel="manifest" href="./manifest.webmanifest">
-    <link rel="apple-touch-icon" href="./icons/icon-192.png">
     <title>心语卡牌（离线包）</title>
-    </head>
+    <script>
+        // 首屏防闪：主题必须在 CSS 生效前定好，否则深色用户会先看到一帧暖色。
+        // 这里只设 data-theme，业务逻辑仍由 src/main.js 负责。
+        (function () {
+            var t = null;
+            try {
+                t = localStorage.getItem('heartTalkTheme') || localStorage.getItem('toolbox-theme');
+            } catch (e) {}
+            document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
+        })();
+    </script>
+</head>
 <body>
 
     <div class="container" style="padding-bottom:0">
@@ -21,8 +30,7 @@
 <div class="container">
         <header>
             <div class="theme-switch-wrap">
-                <a class="filter-btn" href="./heart-talk-cards-offline.html" download style="text-decoration:none;display:inline-flex;align-items:center;">下载离线包</a>
-                <button class="filter-btn theme-toggle-btn" id="themeToggleBtn" type="button" aria-label="切换夜间护眼模式">夜间护眼</button>
+                <button class="filter-btn theme-toggle-btn" id="themeToggleBtn" type="button" aria-label="切换夜间护眼模式" aria-pressed="false">夜间护眼</button>
             </div>
             <h1>心语卡牌</h1>
             <p>用问题打开话匣子，让彼此更靠近一点</p>
@@ -31,17 +39,17 @@
         <div class="filter-section">
             <h3>选择卡牌类型</h3>
             <div class="filter-buttons" id="categoryFilters">
-                <button class="filter-btn active" data-category="all">全部</button>
-                <button class="filter-btn" data-category="couple">情侣</button>
-                <button class="filter-btn" data-category="friend">朋友</button>
-                <button class="filter-btn" data-category="family">家庭</button>
-                <button class="filter-btn" data-category="self">自我</button>
+                <button class="filter-btn active" data-category="all" aria-pressed="true">全部</button>
+                <button class="filter-btn" data-category="couple" aria-pressed="false">情侣</button>
+                <button class="filter-btn" data-category="friend" aria-pressed="false">朋友</button>
+                <button class="filter-btn" data-category="family" aria-pressed="false">家庭</button>
+                <button class="filter-btn" data-category="self" aria-pressed="false">自我</button>
             </div>
-            <div class="filter-buttons" style="margin-top: 15px;" id="levelFilters">
-                <button class="filter-btn active" data-level="all">全部难度</button>
-                <button class="filter-btn" data-level="1">一级</button>
-                <button class="filter-btn" data-level="2">二级</button>
-                <button class="filter-btn" data-level="3">三级</button>
+            <div class="filter-buttons level-filters" id="levelFilters">
+                <button class="filter-btn active" data-level="all" aria-pressed="true">全部难度</button>
+                <button class="filter-btn" data-level="1" aria-pressed="false">一级</button>
+                <button class="filter-btn" data-level="2" aria-pressed="false">二级</button>
+                <button class="filter-btn" data-level="3" aria-pressed="false">三级</button>
             </div>
         </div>
 
@@ -50,25 +58,26 @@
                 <p>点击“抽取卡牌”开始对话</p>
                 <p>适合情侣、朋友、家庭与自我探索场景</p>
             </div>
-            <div id="cardContent" style="display: none;">
+            <div id="cardContent" class="card-content" hidden>
                 <div class="card-category" id="cardCategory"></div>
                 <div class="card-level" id="cardLevel"></div>
                 <div class="card-question" id="cardQuestion"></div>
+                <div class="card-progress" id="cardProgress"></div>
             </div>
         </div>
 
         <div class="controls">
             <button class="btn" id="drawBtn">抽取卡牌</button>
-            <button class="btn btn-secondary" id="saveBtn" style="display: none;">保存回答</button>
-            <button class="btn btn-secondary" id="shareBtn" style="display: none;">分享</button>
+            <button class="btn btn-secondary" id="saveBtn" hidden>保存回答</button>
+            <button class="btn btn-secondary" id="shareBtn" hidden>分享</button>
         </div>
 
         <div class="history-section">
             <h3>
                 对话历史
-                <button class="filter-btn" id="clearHistoryBtn" style="font-size: 0.8rem; padding: 5px 12px;">清空</button>
+                <button class="filter-btn clear-history-btn" id="clearHistoryBtn" type="button">清空</button>
             </h3>
-            <div class="history-list" id="historyList">
+            <div class="history-list" id="historyList" aria-live="polite">
                 <div class="empty-state">
                     <p>暂无对话记录</p>
                 </div>
@@ -76,19 +85,19 @@
         </div>
     </div>
 
-    <div class="modal" id="saveModal">
+    <div class="modal" id="saveModal" role="dialog" aria-modal="true" aria-labelledby="saveModalTitle">
         <div class="modal-content">
-            <h3>你的回答</h3>
-            <p id="saveModalQuestion" style="margin-bottom: 15px; color: #6b7280;"></p>
-            <textarea id="answerInput" placeholder="写下你的思考和感受..."></textarea>
+            <h3 id="saveModalTitle">你的回答</h3>
+            <p class="modal-subtitle" id="saveModalQuestion"></p>
+            <textarea id="answerInput" placeholder="写下你的思考和感受..." aria-label="你的回答"></textarea>
             <button class="btn" id="confirmSaveBtn">保存</button>
             <button class="btn btn-secondary" id="cancelSaveBtn">取消</button>
         </div>
     </div>
 
-    <div class="modal" id="shareModal">
+    <div class="modal" id="shareModal" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle">
         <div class="modal-content">
-            <h3>分享这张卡牌</h3>
+            <h3 id="shareModalTitle">分享这张卡牌</h3>
             <div class="share-preview" id="sharePreview">
                 <div class="question" id="shareQuestion"></div>
                 <div class="answer" id="shareAnswer"></div>
@@ -98,10 +107,10 @@
         </div>
     </div>
 
-    <div class="modal" id="confirmModal">
+    <div class="modal" id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
         <div class="modal-content">
-            <h3>请确认操作</h3>
-            <p id="confirmMessage" style="margin-bottom: 16px; color: #6b7280;"></p>
+            <h3 id="confirmModalTitle">请确认操作</h3>
+            <p class="modal-subtitle" id="confirmMessage"></p>
             <div class="modal-actions">
                 <button class="btn btn-secondary" id="confirmCancelBtn">取消</button>
                 <button class="btn" id="confirmOkBtn">确认</button>
@@ -111,8 +120,7 @@
 
     <div id="toastContainer" aria-live="polite" aria-atomic="true"></div>
 
-    <script type="module" src="./src/main.js"></script>
-
+    
 <style>
 /* ============================================================
    共享主题：暖色调 + 夜间模式
@@ -239,11 +247,36 @@ header {
 .theme-switch-wrap {
     display: flex;
     justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
     margin-bottom: 10px;
 }
 .theme-toggle-btn {
     min-width: 104px;
     padding-inline: 14px;
+}
+/* 「下载离线包」是个 <a>，共用 .filter-btn 外观 */
+.download-offline {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+/* 难度筛选与类型筛选之间的间距（原先是行内 style） */
+.level-filters {
+    margin-top: 15px;
+}
+
+/* 历史区的「清空」比普通筛选按钮小一号 */
+.clear-history-btn {
+    font-size: 0.8rem;
+    padding: 5px 12px;
+    min-height: 32px;
+}
+
+.modal-subtitle {
+    margin-bottom: 15px;
+    color: var(--text-muted);
 }
 
 header h1 {
@@ -303,6 +336,11 @@ header p {
     min-height: 40px;
     cursor: pointer;
     transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.18s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+/* JS 按「该类别下有没有三级卡」隐藏按钮，需要能盖过 flex 布局 */
+.filter-btn[hidden] {
+    display: none;
 }
 
 .filter-btn:hover,
@@ -398,6 +436,13 @@ header p {
     color: #422c1a;
 }
 
+/* 本轮进度：让「不重复抽完一轮」这件事可见 */
+.card-progress {
+    margin-top: 14px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+}
+
 .controls {
     display: flex;
     justify-content: center;
@@ -416,6 +461,9 @@ header p {
     font-weight: 600;
     cursor: pointer;
     letter-spacing: 0.02em;
+    background: linear-gradient(160deg, var(--accent) 0%, var(--accent-strong) 100%);
+    color: #fff;
+    box-shadow: 0 8px 18px rgba(166, 98, 38, 0.3);
     transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease, filter 0.2s ease;
 }
 
@@ -425,12 +473,6 @@ header p {
 
 .btn:active {
     transform: translateY(0) scale(0.98);
-}
-
-.btn {
-    background: linear-gradient(160deg, var(--accent) 0%, var(--accent-strong) 100%);
-    color: #fff;
-    box-shadow: 0 8px 18px rgba(166, 98, 38, 0.3);
 }
 
 .btn-secondary {
@@ -853,6 +895,16 @@ header p {
 :root[data-theme='dark'] .history-section h3 { color: #ecd2b5; }
 :root[data-theme='dark'] .card-category { color: #d4b493; }
 :root[data-theme='dark'] .card-question { color: #f7e7d2; }
+:root[data-theme='dark'] .card-progress { color: #c1a88d; }
+:root[data-theme='dark'] .download-offline {
+    background: #3a3027;
+    color: #ecd2b5;
+    border-color: #6a523b;
+}
+:root[data-theme='dark'] .download-offline:hover {
+    background: linear-gradient(160deg, #d3955a 0%, #be7736 100%);
+    color: #fff;
+}
 :root[data-theme='dark'] .history-item { border-color: #66513d; }
 :root[data-theme='dark'] .history-item .question { color: #efd9bf; }
 :root[data-theme='dark'] .history-item .answer {
@@ -1050,10 +1102,65 @@ function filterCards(cards, category, level) {
     });
 }
 
-function drawRandomCard(cards) {
-    if (!cards.length) return null;
-    const index = Math.floor(Math.random() * cards.length);
-    return cards[index];
+/** Fisher-Yates。random 可注入，便于自检。 */
+function shuffle(items, random = Math.random) {
+    const arr = items.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+/**
+ * 同一轮内不重复出同文本。
+ *
+ * 卡库里 7 组题干逐字相同（同一句话在情侣/朋友/家庭/自我场景都成立），
+ * 抽卡时若不去重，一场对话里可能连抽两条一样的题。先洗牌再去重，
+ * 这样每组重复题每轮由哪一张代表是随机的。
+ */
+function dedupeByQuestion(cards) {
+    const seen = new Set();
+    return cards.filter((card) => {
+        if (seen.has(card.question)) return false;
+        seen.add(card.question);
+        return true;
+    });
+}
+
+/**
+ * 抽卡队列：一轮内不出重复题，抽空后自动重洗。
+ * 每个筛选组合（category|level）各有一条队列，切筛选不丢进度。
+ */
+function createDeck(random = Math.random) {
+    const queues = new Map();
+
+    return {
+        draw(cards, key) {
+            if (!cards.length) return null;
+
+            const prev = queues.get(key);
+            // 上一轮存在且已抽空 → 本次是重开一轮
+            const restarted = Boolean(prev && !prev.queue.length);
+            // 卡池变了（数据改动）就重洗，避免队列与筛选错位
+            let entry = prev && prev.poolSize === cards.length ? prev : null;
+
+            if (!entry || !entry.queue.length) {
+                const queue = dedupeByQuestion(shuffle(cards, random));
+                entry = { queue, poolSize: cards.length, total: queue.length };
+            }
+
+            const card = entry.queue.pop();
+            queues.set(key, entry);
+
+            return {
+                card,
+                restarted,
+                drawn: entry.total - entry.queue.length,
+                total: entry.total
+            };
+        }
+    };
 }
 
 // ---- src/core/history-store.js ----
@@ -1096,7 +1203,7 @@ function createElement(tag, className, text) {
     return node;
 }
 
-function renderCard({ currentCard, categoryNames, levelNames, elements }) {
+function renderCard({ currentCard, categoryNames, levelNames, progress, elements }) {
     const {
         emptyState,
         cardContent,
@@ -1108,21 +1215,35 @@ function renderCard({ currentCard, categoryNames, levelNames, elements }) {
     } = elements;
 
     if (!currentCard) {
-        emptyState.style.display = 'block';
-        cardContent.style.display = 'none';
-        saveBtn.style.display = 'none';
-        shareBtn.style.display = 'none';
+        emptyState.hidden = false;
+        cardContent.hidden = true;
+        saveBtn.hidden = true;
+        shareBtn.hidden = true;
         return;
     }
 
-    emptyState.style.display = 'none';
-    cardContent.style.display = 'block';
+    emptyState.hidden = true;
+    cardContent.hidden = false;
     cardCategory.textContent = categoryNames[currentCard.category] || currentCard.category;
     cardLevel.textContent = levelNames[String(currentCard.level)] || `第${currentCard.level}级`;
     cardLevel.className = `card-level level-${currentCard.level}`;
     cardQuestion.textContent = currentCard.question;
-    saveBtn.style.display = 'inline-block';
-    shareBtn.style.display = 'inline-block';
+    saveBtn.hidden = false;
+    shareBtn.hidden = false;
+
+    renderProgress(progress, elements);
+}
+
+function renderProgress(progress, elements) {
+    const node = elements.cardProgress;
+    if (!node) return;
+
+    if (!progress) {
+        node.textContent = '';
+        return;
+    }
+
+    node.textContent = `本轮第 ${progress.drawn} / ${progress.total} 张`;
 }
 
 function renderHistory({ history, levelNames, historyList }) {
@@ -1160,12 +1281,16 @@ const state = {
     history: loadHistory()
 };
 
+const deck = createDeck();
+
 const UI_TIMING = {
     toastVisibleMs: 1800,
     toastExitMs: 180
 };
 
 const THEME_KEY = 'heartTalkTheme';
+/** 全工具共用的主题键，供根聚合首页跟随本工具的主题选择。 */
+const SHARED_THEME_KEY = 'toolbox-theme';
 
 const elements = {
     cardContainer: document.getElementById('cardContainer'),
@@ -1174,6 +1299,7 @@ const elements = {
     cardCategory: document.getElementById('cardCategory'),
     cardLevel: document.getElementById('cardLevel'),
     cardQuestion: document.getElementById('cardQuestion'),
+    cardProgress: document.getElementById('cardProgress'),
     drawBtn: document.getElementById('drawBtn'),
     saveBtn: document.getElementById('saveBtn'),
     shareBtn: document.getElementById('shareBtn'),
@@ -1213,10 +1339,13 @@ function buildNamesMap(selector, dataKey) {
 const categoryNames = buildNamesMap('#categoryFilters .filter-btn', 'category');
 const levelNames = buildNamesMap('#levelFilters .filter-btn', 'level');
 
-function getSavedAnswerForCurrentCard() {
-    if (!state.currentCard) return '';
-    const item = state.history.find((entry) => entry.card.id === state.currentCard.id);
-    return item ? item.answer : '';
+function currentCardKey() {
+    return `${state.currentCategory}|${state.currentLevel}`;
+}
+
+function getSavedItemForCurrentCard() {
+    if (!state.currentCard) return null;
+    return state.history.find((entry) => entry.card.id === state.currentCard.id) || null;
 }
 
 function refreshCardView() {
@@ -1224,6 +1353,7 @@ function refreshCardView() {
         currentCard: state.currentCard,
         categoryNames,
         levelNames,
+        progress: state.progress,
         elements
     });
 }
@@ -1237,8 +1367,21 @@ function refreshHistoryView() {
 }
 
 function getStoredTheme() {
-    const value = localStorage.getItem(THEME_KEY);
-    return value === 'dark' ? 'dark' : 'light';
+    try {
+        return localStorage.getItem(THEME_KEY) === 'dark' ? 'dark' : 'light';
+    } catch {
+        return 'light';
+    }
+}
+
+function persistTheme(theme) {
+    // 隐私模式下 setItem 会抛异常；主题本身仍然生效，只是不记住。
+    try {
+        localStorage.setItem(THEME_KEY, theme);
+        localStorage.setItem(SHARED_THEME_KEY, theme);
+    } catch {
+        /* 存不下就算了，不影响本次切换 */
+    }
 }
 
 function applyTheme(theme) {
@@ -1251,7 +1394,7 @@ function applyTheme(theme) {
 function toggleTheme() {
     const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
     const next = current === 'dark' ? 'light' : 'dark';
-    localStorage.setItem(THEME_KEY, next);
+    persistTheme(next);
     applyTheme(next);
     showToast(next === 'dark' ? '已切换到夜间护眼模式。' : '已切换到暖色模式。', 'success');
 }
@@ -1275,47 +1418,101 @@ function showToast(message, type = 'info') {
     }, UI_TIMING.toastVisibleMs);
 }
 
+/* ---- 弹窗：焦点陷阱 + Escape + 滚动锁 ---- */
+
+/** 打开的弹窗栈，栈顶是最后打开的那个。 */
+const modalStack = [];
+let lastFocused = null;
+
+function focusableIn(modal) {
+    return Array.from(
+        modal.querySelectorAll('button, a[href], textarea, input, select, [tabindex]:not([tabindex="-1"])')
+    ).filter((el) => !el.disabled && el.offsetParent !== null);
+}
+
+function topModal() {
+    return modalStack.length ? modalStack[modalStack.length - 1] : null;
+}
+
+function onModalKeyDown(event) {
+    const top = topModal();
+    if (!top) return;
+
+    if (event.key === 'Escape') {
+        top.onClose();
+        return;
+    }
+    if (event.key !== 'Tab') return;
+
+    const items = focusableIn(top.modal);
+    if (!items.length) return;
+
+    const first = items[0];
+    const last = items[items.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+    }
+}
+
+/** 打开弹窗；onClose 决定 Escape 与遮罩点击时做什么。 */
+function openModal(modal, onClose) {
+    if (modalStack.some((entry) => entry.modal === modal)) return;
+
+    if (!modalStack.length) {
+        lastFocused = document.activeElement;
+        document.body.style.overflow = 'hidden';
+        document.addEventListener('keydown', onModalKeyDown);
+    }
+    modalStack.push({ modal, onClose });
+    modal.classList.add('active');
+}
+
+function closeModal(modal) {
+    const index = modalStack.findIndex((entry) => entry.modal === modal);
+    if (index === -1) return;
+
+    modalStack.splice(index, 1);
+    modal.classList.remove('active');
+
+    if (!modalStack.length) {
+        document.removeEventListener('keydown', onModalKeyDown);
+        document.body.style.overflow = '';
+        if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+        lastFocused = null;
+    }
+}
+
 function showConfirm(message) {
     return new Promise((resolve) => {
         elements.confirmMessage.textContent = message;
-        elements.confirmModal.classList.add('active');
 
-        const cleanUp = () => {
-            elements.confirmModal.classList.remove('active');
+        const settle = (value) => {
             elements.confirmOkBtn.removeEventListener('click', onConfirm);
             elements.confirmCancelBtn.removeEventListener('click', onCancel);
             elements.confirmModal.removeEventListener('click', onOverlayClick);
-            document.removeEventListener('keydown', onKeyDown);
+            closeModal(elements.confirmModal);
+            resolve(value);
         };
 
-        const onConfirm = () => {
-            cleanUp();
-            resolve(true);
-        };
-
-        const onCancel = () => {
-            cleanUp();
-            resolve(false);
-        };
-
+        const onConfirm = () => settle(true);
+        const onCancel = () => settle(false);
         const onOverlayClick = (event) => {
-            if (event.target === elements.confirmModal) {
-                onCancel();
-            }
-        };
-
-        const onKeyDown = (event) => {
-            if (event.key === 'Escape') {
-                onCancel();
-            }
+            if (event.target === elements.confirmModal) settle(false);
         };
 
         elements.confirmOkBtn.addEventListener('click', onConfirm);
         elements.confirmCancelBtn.addEventListener('click', onCancel);
         elements.confirmModal.addEventListener('click', onOverlayClick);
-        document.addEventListener('keydown', onKeyDown);
+        openModal(elements.confirmModal, onCancel);
+        elements.confirmOkBtn.focus();
     });
 }
+
+/* ---- 抽卡 ---- */
 
 function drawCard() {
     const filtered = filterCards(cards, state.currentCategory, state.currentLevel);
@@ -1324,21 +1521,37 @@ function drawCard() {
         return;
     }
 
-    state.currentCard = drawRandomCard(filtered);
+    const result = deck.draw(filtered, currentCardKey());
+    state.currentCard = result.card;
+    state.progress = { drawn: result.drawn, total: result.total };
+
     refreshCardView();
-    elements.cardContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (result.restarted) {
+        showToast('本轮已抽完，重新开始一轮。', 'info');
+    }
+    // CSS 的 prefers-reduced-motion 管不到 JS 指定的 behavior，这里自己判断
+    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    elements.cardContainer.scrollIntoView({
+        behavior: reduceMotion ? 'auto' : 'smooth',
+        block: 'center'
+    });
 }
+
+/* ---- 保存 ---- */
 
 function openSaveModal() {
     if (!state.currentCard) return;
     elements.saveModalQuestion.textContent = state.currentCard.question;
-    elements.answerInput.value = '';
-    elements.saveModal.classList.add('active');
+
+    const saved = getSavedItemForCurrentCard();
+    elements.answerInput.value = saved ? saved.answer : '';
+
+    openModal(elements.saveModal, closeSaveModal);
     elements.answerInput.focus();
 }
 
 function closeSaveModal() {
-    elements.saveModal.classList.remove('active');
+    closeModal(elements.saveModal);
 }
 
 function saveAnswer() {
@@ -1350,35 +1563,49 @@ function saveAnswer() {
         return;
     }
 
-    const historyItem = {
-        id: Date.now(),
-        timestamp: new Date().toLocaleString('zh-CN'),
-        card: state.currentCard,
-        answer
-    };
+    const existing = getSavedItemForCurrentCard();
+    const nextHistory = existing
+        ? state.history.map((entry) =>
+              entry === existing ? { ...entry, answer, timestamp: new Date().toLocaleString('zh-CN') } : entry
+          )
+        : [
+              {
+                  id: Date.now(),
+                  timestamp: new Date().toLocaleString('zh-CN'),
+                  card: state.currentCard,
+                  answer
+              },
+              ...state.history
+          ];
 
-    state.history.unshift(historyItem);
-    if (!saveHistory(state.history)) {
+    // 先落盘再改内存：写失败时 state 不被污染，
+    // 否则 UI 会假装没保存，下次渲染又冒出来、刷新后又消失。
+    if (!saveHistory(nextHistory)) {
         showToast('保存失败，请检查浏览器存储权限。', 'error');
         return;
     }
 
+    state.history = nextHistory;
     refreshHistoryView();
     closeSaveModal();
-    showToast('回答已保存。', 'success');
+    showToast(existing ? '回答已更新。' : '回答已保存。', 'success');
 }
+
+/* ---- 分享 ---- */
 
 function openShareModal() {
     if (!state.currentCard) return;
 
     elements.shareQuestion.textContent = state.currentCard.question;
-    const answer = getSavedAnswerForCurrentCard() || '（点击“保存回答”后可展示你的回答）';
-    elements.shareAnswer.textContent = answer;
-    elements.shareModal.classList.add('active');
+    const saved = getSavedItemForCurrentCard();
+    elements.shareAnswer.textContent = saved ? saved.answer : '（点击“保存回答”后可展示你的回答）';
+
+    openModal(elements.shareModal, closeShareModal);
+    elements.copyShareBtn.focus();
 }
 
 function closeShareModal() {
-    elements.shareModal.classList.remove('active');
+    closeModal(elements.shareModal);
 }
 
 function fallbackCopy(text) {
@@ -1404,7 +1631,15 @@ function fallbackCopy(text) {
 async function copyShareLink() {
     if (!state.currentCard) return;
 
-    const text = `心语卡牌\n\n${state.currentCard.question}\n\n来自心语卡牌`;
+    const saved = getSavedItemForCurrentCard();
+    const text = [
+        '心语卡牌',
+        '',
+        state.currentCard.question,
+        saved ? `\n${saved.answer}` : '',
+        '',
+        '来自心语卡牌'
+    ].join('\n');
 
     try {
         if (navigator.clipboard?.writeText) {
@@ -1428,20 +1663,47 @@ async function copyShareLink() {
     }
 }
 
+/* ---- 历史 ---- */
+
 async function clearHistory() {
     const confirmed = await showConfirm('确定要清空所有历史记录吗？此操作不可恢复。');
     if (!confirmed) return;
 
+    if (!clearHistoryStore()) {
+        showToast('清空失败，请检查浏览器存储权限。', 'error');
+        return;
+    }
+
     state.history = [];
-    clearHistoryStore();
     refreshHistoryView();
     showToast('历史记录已清空。', 'success');
 }
 
+/* ---- 筛选 ---- */
+
 function setActiveFilterButton(container, target) {
     if (!target.classList.contains('filter-btn')) return;
-    container.querySelectorAll('.filter-btn').forEach((btn) => btn.classList.remove('active'));
-    target.classList.add('active');
+    container.querySelectorAll('.filter-btn').forEach((btn) => {
+        const active = btn === target;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-pressed', String(active));
+    });
+}
+
+/** 某个筛选组合下有没有卡。没有就隐藏对应按钮，并在选中项被藏起来时退回「全部难度」。 */
+function pruneLevelFilters() {
+    elements.levelFilters.querySelectorAll('.filter-btn').forEach((btn) => {
+        const level = btn.dataset.level;
+        if (!level) return;
+        btn.hidden = filterCards(cards, state.currentCategory, level).length === 0;
+    });
+
+    // 原来选中的难度在新类别下没有卡 → 退回全部，否则一点就撞「没有可用卡牌」
+    const active = elements.levelFilters.querySelector('.filter-btn.active');
+    if (active && active.hidden) {
+        state.currentLevel = 'all';
+        setActiveFilterButton(elements.levelFilters, elements.levelFilters.querySelector('[data-level="all"]'));
+    }
 }
 
 function setupEventListeners() {
@@ -1459,6 +1721,7 @@ function setupEventListeners() {
         setActiveFilterButton(elements.categoryFilters, event.target);
         if (event.target.dataset.category) {
             state.currentCategory = event.target.dataset.category;
+            pruneLevelFilters();
         }
     });
 
@@ -1476,10 +1739,15 @@ function setupEventListeners() {
     elements.shareModal.addEventListener('click', (event) => {
         if (event.target === elements.shareModal) closeShareModal();
     });
+
+    elements.answerInput.addEventListener('keydown', (event) => {
+        if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') saveAnswer();
+    });
 }
 
 function init() {
     applyTheme(getStoredTheme());
+    pruneLevelFilters();
     refreshCardView();
     refreshHistoryView();
     setupEventListeners();
