@@ -1,4 +1,4 @@
-﻿import { cards, categories } from './data/cards.js';
+import { cards, categories } from './data/cards.js';
 import { filterCards, drawRandomCard, getCardThemeId } from './core/card-service.js';
 import { loadHistory, saveHistory, clearHistoryStore, updateHistoryItem, deleteHistoryItem } from './core/history-store.js';
 import { filterHistory, exportToJSON, downloadJSON } from './core/history-filter.js';
@@ -282,7 +282,13 @@ function applyTheme(theme) {
 
 function setTheme(theme) {
     if (!THEME_CHOICES.includes(theme)) return;
-    localStorage.setItem(THEME_KEY, theme);
+    try {
+        localStorage.setItem(THEME_KEY, theme);
+        // 全工具共用的主题键，供根聚合首页跟随本工具的主题选择
+        localStorage.setItem('toolbox-theme', theme);
+    } catch {
+        /* 隐私模式下存不下，主题本次仍然生效 */
+    }
     applyTheme(theme);
     showToast(`\u5df2\u5207\u6362\u5230${THEME_LABELS[theme]}\u98ce\u683c\u3002`, 'success');
 }

@@ -1,5 +1,8 @@
 /* 圣经金句 · 灵修记录 —— 离线缓存 */
-const CACHE = "sw-bible-v1";
+/* CacheStorage 按 origin 共享，activate 只清理带本前缀的键，
+   否则会把同站其它工具（heart-talk / premarital）的缓存一起删掉。 */
+const CACHE_PREFIX = "bible-";
+const CACHE = "bible-5a09694c";
 const ASSETS = [
   "./",
   "./index.html",
@@ -34,7 +37,9 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
+      Promise.all(
+        keys.filter((k) => k.startsWith(CACHE_PREFIX) && k !== CACHE).map((k) => caches.delete(k))
+      )
     ).then(() => self.clients.claim())
   );
 });
@@ -54,7 +59,11 @@ self.addEventListener("fetch", (event) => {
           caches.open(CACHE).then((cache) => cache.put(event.request, copy));
           return res;
         })
-        .catch(() => caches.match("./index.html"));
+        .catch(() => {
+          // 只有导航请求才回退到 index.html（见 heart-talk/sw.js 同款说明）
+          if (event.request.mode === "navigate") return caches.match("./index.html");
+          return Response.error();
+        });
     })
   );
 });

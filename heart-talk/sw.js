@@ -1,5 +1,8 @@
 /* Offline cache for 心语卡牌 PWA */
-const CACHE = "sw-5c6fa3fc";
+/* CacheStorage 按 origin 共享，activate 只清理带本前缀的键，
+   否则会把同站其它工具（bible / premarital）的缓存一起删掉。 */
+const CACHE_PREFIX = "heart-talk-";
+const CACHE = "heart-talk-bb790e5e";
 const ASSETS = [
   "../shared/theme.css",
   "./",
@@ -8,6 +11,7 @@ const ASSETS = [
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./src/styles.css",
+  "./src/pwa.js",
   "./src/main.js",
   "./src/data/cards.js",
   "./src/core/card-service.js",
@@ -25,7 +29,9 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
+      Promise.all(
+        keys.filter((k) => k.startsWith(CACHE_PREFIX) && k !== CACHE).map((k) => caches.delete(k))
+      )
     ).then(() => self.clients.claim())
   );
 });
@@ -45,7 +51,12 @@ self.addEventListener("fetch", (event) => {
           caches.open(CACHE).then((cache) => cache.put(event.request, copy));
           return res;
         })
-        .catch(() => caches.match("./index.html"));
+        .catch(() => {
+          // 只有导航请求才回退到 index.html；否则 JS/CSS/图片请求失败时
+          // 会拿到一坨 HTML，报错信息完全对不上。
+          if (event.request.mode === "navigate") return caches.match("./index.html");
+          return Response.error();
+        });
     })
   );
 });

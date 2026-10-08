@@ -40,10 +40,17 @@ python -m http.server 8921        # 本地预览
 node scripts/check-ui-chinese.js  # 界面文案英文检查
 node scripts/build-bundle.js      # 改动 src/ 后重新生成 file:// bundle
 node scripts/build-bible-full.js  # 从 books.txt 重新生成全本模块
+python ../scripts/bump_sw_cache.py sw.js .   # 改动任一预缓存资源后重算缓存指纹
 ```
 
 **改动 `src/` 下任何模块后必须重跑 `build-bundle.js`**，否则 `file://` 打开时
 用的是过期代码。`check-ui-chinese.js` 在每次提交前跑。
+
+**`sw.js` 的 `CACHE` 是内容寻址的**（形如 `bible-5a09694c`）。它不在
+`build-bundle.js` 的流程里，改完 `src/` 或 `index.html` 后要手动跑一次
+`python ../scripts/bump_sw_cache.py sw.js .`，否则老用户会永久留在旧缓存里。
+activate 只清理带 `CACHE_PREFIX`（`bible-`）的 key —— CacheStorage 按 origin
+共享，同源下还有 heart-talk / premarital 的缓存，不能误删。
 
 ## 代码风格
 
