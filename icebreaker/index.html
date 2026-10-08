@@ -390,7 +390,7 @@
             document.documentElement.setAttribute('data-theme', theme);
             $("themeToggleBtn").textContent = theme === 'dark' ? '暖色模式' : '夜间护眼';
             $("themeToggleBtn").setAttribute('aria-pressed', String(theme === 'dark'));
-            try { localStorage.setItem('icebreaker-theme', theme); } catch (e) {}
+            try { localStorage.setItem('icebreaker-theme', theme); localStorage.setItem('toolbox-theme', theme); } catch (e) {}
         }
         $("themeToggleBtn").addEventListener('click', () => {
             const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';

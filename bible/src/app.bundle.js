@@ -2051,7 +2051,6 @@ function getCardById(id) {
  * 经文主题服务
  * 提供主题 id 解析、按主题筛选、随机抽取
  */
-
 /**
  * 取一张卡的主题 id（英文，如 'comfort'）
  *
@@ -2327,7 +2326,6 @@ function deleteHistoryItem(history, id) {
 /**
  * 灵修记录的筛选与导出
  */
-
 const SOURCE_LABELS = {
     draw: '抽取金句',
     daily: '今日经文',
@@ -3113,8 +3111,6 @@ function renderExportControls({ container, onExportJSON, onExportImage, onExport
  * 统计计算模块
  * 提供灵修记录的数据分析和报告生成功能
  */
-
-
 // 主题名称/配色（以 cards.js 的 categories 为唯一真源）
 const CATEGORY_NAMES = {};
 const CATEGORY_COLORS = {};
@@ -3909,7 +3905,6 @@ async function renderFullStatsReport({ container, history, onExportImage }) {
  * 「换一句」= 在当天内向后偏移若干位，偏移量存在本地，
  * 这样刷新页面仍然停留在用户自己换到的那一节。
  */
-
 const OFFSET_KEY = 'bibleDailyOffset';
 
 /**
@@ -4388,8 +4383,6 @@ const BOOK_NAMES = [
  *
  * 选中后回填经文原文，交给上层打开「写下感受」。
  */
-
-
 /**
  * 转义 HTML
  * @param {string} text
@@ -5583,7 +5576,13 @@ function applyTheme(theme) {
 
 function setTheme(theme) {
     if (!THEME_CHOICES.includes(theme)) return;
-    localStorage.setItem(THEME_KEY, theme);
+    try {
+        localStorage.setItem(THEME_KEY, theme);
+        // 全工具共用的主题键，供根聚合首页跟随本工具的主题选择
+        localStorage.setItem('toolbox-theme', theme);
+    } catch {
+        /* 隐私模式下存不下，主题本次仍然生效 */
+    }
     applyTheme(theme);
     showToast(`\u5df2\u5207\u6362\u5230${THEME_LABELS[theme]}\u98ce\u683c\u3002`, 'success');
 }

@@ -27,6 +27,7 @@ export function applyTheme(theme) {
   }
   try {
     localStorage.setItem(KEY, theme);
+    localStorage.setItem("toolbox-theme", theme);
   } catch {}
 }
 

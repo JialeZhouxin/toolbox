@@ -225,10 +225,17 @@
         <div class="footer-note">一个仓库 · 多个小工具</div>
     </div>
     <script>
-        // 夜间护眼模式（与各工具一致）
+        // 主题跟随上次用过的工具：优先共享键 toolbox-theme，
+        // 再回退到历史遗留的 brain-teaser-theme / theme。
         (function () {
-            const saved = (function () { try { return localStorage.getItem('brain-teaser-theme') || localStorage.getItem('theme'); } catch (e) { return null; } })();
-            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            var saved = null;
+            try {
+                saved =
+                    localStorage.getItem('toolbox-theme') ||
+                    localStorage.getItem('brain-teaser-theme') ||
+                    localStorage.getItem('theme');
+            } catch (e) {}
+            var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
             document.documentElement.setAttribute('data-theme', saved || (prefersDark ? 'dark' : 'light'));
         })();
     </script>
