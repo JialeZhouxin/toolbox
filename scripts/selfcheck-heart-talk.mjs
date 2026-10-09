@@ -47,22 +47,68 @@ assert.deepEqual(
   "同文本只留第一张"
 );
 
-// 真实卡库：130 张里有 7 组共 9 张重复文本 → 一轮应只有 121 个不同题面
+// 真实卡库：250 张里有 9 张重复文本（7 组）→ 一轮有 241 个不同题面
 {
   const { cards } = await import("../heart-talk/src/data/cards.js");
-  assert.equal(cards.length, 130);
+
+  // id 必须连续 1..N 且无重复 —— 新增卡最容易在这里出错
+  const ids = cards.map((c) => c.id);
+  assert.equal(new Set(ids).size, ids.length, "id 不得重复");
+  assert.ok(
+    ids.every((id, i) => id === i + 1),
+    `id 必须连续 1..${ids.length}，实际首尾 ${ids[0]}..${ids[ids.length - 1]}`
+  );
+
+  // 字段完整、取值合法
+  for (const c of cards) {
+    assert.ok(c.question && c.category && c.level, `卡 ${c.id} 字段缺失`);
+    assert.ok(["couple", "friend", "family", "self"].includes(c.category), `卡 ${c.id} 类别非法`);
+    assert.ok([1, 2, 3].includes(c.level), `卡 ${c.id} 难度非法`);
+  }
+
+  // 文案护栏：编码损坏会把全角标点变成半角 ?，拉丁字母也说明混进了英文
+  for (const c of cards) {
+    assert.ok(!/\?/.test(c.question), `卡 ${c.id} 含半角问号（可能是编码损坏）：${c.question}`);
+    assert.ok(!/[A-Za-z]/.test(c.question), `卡 ${c.id} 含拉丁字母：${c.question}`);
+    assert.ok(!c.question.includes("\uFFFD"), `卡 ${c.id} 含替换字符（编码损坏）：${c.question}`);
+    assert.equal(c.question, c.question.trim(), `卡 ${c.id} 首尾有空白`);
+  }
+
+  // 四个类别都要有三级卡，否则 UI 的三级按钮会被 pruneLevelFilters 隐藏
+  const l3cats = new Set(cards.filter((c) => c.level === 3).map((c) => c.category));
+  for (const cat of ["couple", "friend", "family", "self"]) {
+    assert.ok(l3cats.has(cat), `${cat} 没有三级卡`);
+  }
+
+  // 张数是路标：改动卡库时在这里同步，避免"改了数据忘了改断言"
+  assert.equal(cards.length, 250, "总卡数变了，请同步本断言");
+
   const uniq = dedupeByQuestion(shuffle(cards));
-  assert.equal(uniq.length, 121, `去重后应有 121 题，实际 ${uniq.length}`);
+  assert.equal(uniq.length, 241, `去重后应有 241 题，实际 ${uniq.length}`);
   assert.equal(new Set(uniq.map((c) => c.question)).size, uniq.length, "去重后不得再有重复文本");
 
-  // 抽满一轮：题面不得重复，且数量等于去重后的题数
-  const deck = createDeck();
-  const seen = new Set();
-  for (let i = 0; i < 121; i++) seen.add(deck.draw(cards, "all|all").card.question);
-  assert.equal(seen.size, 121, "一轮内不得出现重复题面");
+  // 每一张卡都必须能被抽到：逐个筛选组合抽满一轮，且一轮内题面不重复
+  const combos = [];
+  for (const cat of ["all", "couple", "friend", "family", "self"]) {
+    for (const lv of ["all", "1", "2", "3"]) combos.push([cat, lv]);
+  }
+  for (const [cat, lv] of combos) {
+    const pool = filterCards(cards, cat, lv);
+    assert.ok(pool.length > 0, `${cat}/${lv} 卡池为空，UI 上该按钮不应存在`);
 
-  // 第 122 次触发重洗
-  assert.equal(deck.draw(cards, "all|all").restarted, true);
+    const expected = new Set(pool.map((c) => c.question)).size;
+    const d = createDeck();
+    const seen = new Set();
+    for (let i = 0; i < expected; i++) seen.add(d.draw(pool, `${cat}|${lv}`).card.question);
+    assert.equal(seen.size, expected, `${cat}/${lv} 一轮内出现重复题面`);
+
+    // 抽满一轮后，下一张必须报告重洗
+    assert.equal(
+      d.draw(pool, `${cat}|${lv}`).restarted,
+      true,
+      `${cat}/${lv} 抽满一轮后未报告重洗`
+    );
+  }
 }
 
 // ---- createDeck：一轮内不重复 ----

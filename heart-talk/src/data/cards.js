@@ -44,7 +44,7 @@ export const cards = [
             { id: 35, level: 1, category: 'self', question: '最近有什么新的爱好或兴趣？' },
             { id: 36, level: 1, category: 'self', question: '这周有什么小确幸？' },
             
-            // ========== Level 2 - 情感深入（40 张）==========
+            // ========== Level 2 - 情感深入（54 张）==========
             // 💕 情侣 - Level 2
             { id: 37, level: 2, category: 'couple', question: '这段关系让你变成了什么样的人？' },
             { id: 38, level: 2, category: 'couple', question: '你觉得我们之间最健康的沟通方式是什么？' },
@@ -107,8 +107,8 @@ export const cards = [
             { id: 89, level: 2, category: 'self', question: '你的长期目标是什么？' },
             { id: 90, level: 2, category: 'self', question: '什么能给你带来内心的平静？' },
             
-            // ========== Level 3 - 深度脆弱（24 张）==========
-            // 💕 情侣 - Level 3
+            // ========== Level 3 - 深度脆弱（160 张）==========
+            // 💕 情侣 - Level 3（40 张）
             { id: 91, level: 3, category: 'couple', question: '你在这段关系里最害怕失去什么？' },
             { id: 92, level: 3, category: 'couple', question: '有什么是我做过让你受伤但你一直没说的？' },
             { id: 93, level: 3, category: 'couple', question: '你觉得我们之间最大的挑战是什么？' },
@@ -120,7 +120,7 @@ export const cards = [
             { id: 99, level: 3, category: 'couple', question: '你对婚姻和承诺的看法是什么？' },
             { id: 100, level: 3, category: 'couple', question: '你害怕失去什么？这个恐惧如何影响你的生活？' },
 
-            // ========== Level 3 - 深水区（补 30 张）==========
+            // —— 情侣三级 · 主题分组（30 张）——
             // 主题一：价值观与人生方向
             { id: 101, level: 3, category: 'couple', question: '人生中什么对你来说最重要？我愿意如何为它腾出空间？' },
             { id: 102, level: 3, category: 'couple', question: '你希望我们十年后过着怎样的生活？我们现在的选择在朝它走吗？' },
@@ -154,5 +154,143 @@ export const cards = [
             { id: 127, level: 3, category: 'couple', question: '你在这段关系里，有没有为了迎合我而压抑过真实的自己？' },
             { id: 128, level: 3, category: 'couple', question: '你对我有什么期待，是觉得我可能做不到、所以不敢提的？' },
             { id: 129, level: 3, category: 'couple', question: '我们之间最该被原谅的、最该被记住的分别是什么？' },
-            { id: 130, level: 3, category: 'couple', question: '如果此刻对关系许一个愿望，你许什么？' }
+            { id: 130, level: 3, category: 'couple', question: '如果此刻对关系许一个愿望，你许什么？' },
+
+            // 👫 朋友 - Level 3（40 张）
+            // 主题一：信任与边界
+            { id: 131, level: 3, category: 'friend', question: '有什么是你一直没告诉我，因为怕我改变了对你的看法？' },
+            { id: 132, level: 3, category: 'friend', question: '我们的友谊里，哪条界限是我曾经越过、但你没说出口的？' },
+            { id: 133, level: 3, category: 'friend', question: '你愿意把哪一件最丢脸的事告诉我？我想成为那个能听的人。' },
+            { id: 134, level: 3, category: 'friend', question: '如果我做了一件让你失望的事，你会直接说，还是会先沉默一阵？' },
+            { id: 135, level: 3, category: 'friend', question: '有什么事你只跟我一个人说过？你当时为什么选择我？' },
+            { id: 136, level: 3, category: 'friend', question: '我们之间有没有一个话题，是你一直小心绕开的？' },
+            { id: 137, level: 3, category: 'friend', question: '我在你面前，有没有哪次让你觉得不被尊重？' },
+            { id: 138, level: 3, category: 'friend', question: '你希望我在别人面前怎么介绍你、怎么替你说话？' },
+            { id: 139, level: 3, category: 'friend', question: '如果有一天我必须对你说一句难听的真话，你希望我怎么说？' },
+            { id: 140, level: 3, category: 'friend', question: '你觉得我们之间的信任，是在哪一件事上建立起来的？' },
+            // 主题二：差异与疏远
+            { id: 141, level: 3, category: 'friend', question: '我们最不一样的地方是什么？这一点曾让你困扰过吗？' },
+            { id: 142, level: 3, category: 'friend', question: '有没有一段时间，你觉得我们走远了？那时候你在想什么？' },
+            { id: 143, level: 3, category: 'friend', question: '你身上有哪个选择，是我至今都不太理解的？' },
+            { id: 144, level: 3, category: 'friend', question: '我们多久没有好好聊过一次了？你也会有这种感觉吗？' },
+            { id: 145, level: 3, category: 'friend', question: '如果我做的事你并不认同，你会怎么让我知道？' },
+            { id: 146, level: 3, category: 'friend', question: '你希望我少说哪句话、多问哪个问题？' },
+            { id: 147, level: 3, category: 'friend', question: '我们之间的差异里，哪一点其实是你羡慕的？' },
+            { id: 148, level: 3, category: 'friend', question: '你介意过我的哪个习惯？一直没说是因为什么？' },
+            { id: 149, level: 3, category: 'friend', question: '有没有一次，你觉得我在评判你，而不是在听你？' },
+            { id: 150, level: 3, category: 'friend', question: '如果我们的生活节奏越来越不同，你希望我们怎么维持？' },
+            // 主题三：陪伴与支持
+            { id: 151, level: 3, category: 'friend', question: '你最难的那段日子，你希望我那时做了什么？' },
+            { id: 152, level: 3, category: 'friend', question: '你需要帮忙的时候，为什么常常先不开口？' },
+            { id: 153, level: 3, category: 'friend', question: '我怎么陪你，才是你真正需要的，而不是我自以为的？' },
+            { id: 154, level: 3, category: 'friend', question: '你低谷的时候，最不想听到别人说什么？' },
+            { id: 155, level: 3, category: 'friend', question: '你希望我在你开心的时候，比你更开心一点吗？' },
+            { id: 156, level: 3, category: 'friend', question: '有什么事你希望我主动问，而不是等你自己说？' },
+            { id: 157, level: 3, category: 'friend', question: '我给过你最有用的支持是哪一次？我想知道怎么做才对。' },
+            { id: 158, level: 3, category: 'friend', question: '你需要的是解决方案，还是一个愿意听你说话的人？' },
+            { id: 159, level: 3, category: 'friend', question: '你什么时候最需要有人在身边，却谁也没找？' },
+            { id: 160, level: 3, category: 'friend', question: '如果我只做一件事就能帮到你，你希望是什么？' },
+            // 主题四：告别与遗憾
+            { id: 161, level: 3, category: 'friend', question: '你最怕的是哪种告别？是悄无声息的那种吗？' },
+            { id: 162, level: 3, category: 'friend', question: '我们之间有没有一句一直没说出口的道谢？' },
+            { id: 163, level: 3, category: 'friend', question: '如果这是我们最后一次长谈，你最想留下哪句话？' },
+            { id: 164, level: 3, category: 'friend', question: '有哪个朋友你已经失去联系，却还会想起？' },
+            { id: 165, level: 3, category: 'friend', question: '你遗憾没有早一点认识谁，或者早一点说开什么？' },
+            { id: 166, level: 3, category: 'friend', question: '你希望将来我们老了，还保持着怎样的联系？' },
+            { id: 167, level: 3, category: 'friend', question: '有没有一件事，你到现在还在心里为它道歉？' },
+            { id: 168, level: 3, category: 'friend', question: '如果你要离开这座城市，你会第一个告诉谁？' },
+            { id: 169, level: 3, category: 'friend', question: '你怕不怕有一天我们只剩下点赞之交？' },
+            { id: 170, level: 3, category: 'friend', question: '你希望我在你的人生里，扮演一个什么样的角色？' },
+
+            // 👨‍👩‍ 家庭 - Level 3（40 张）
+            // 主题一：表达爱
+            { id: 171, level: 3, category: 'family', question: '在我们家，你有多久没有听到一句「我爱你」了？你想听到吗？' },
+            { id: 172, level: 3, category: 'family', question: '你希望我用什么方式爱你？我现在的做法，对你来说够吗？' },
+            { id: 173, level: 3, category: 'family', question: '在我们家，爱是怎么被表达的？是做饭，还是别的什么？' },
+            { id: 174, level: 3, category: 'family', question: '你上一次真心夸我是什么时候？当时为什么没说出来？' },
+            { id: 175, level: 3, category: 'family', question: '你希望我多大程度上参与你的生活，而不是远远看着？' },
+            { id: 176, level: 3, category: 'family', question: '有什么事你其实很为我骄傲，却从来没当面讲过？' },
+            { id: 177, level: 3, category: 'family', question: '你希望我们多久联系一次，才算刚刚好？' },
+            { id: 178, level: 3, category: 'family', question: '如果我们只能靠一件事表达在乎，你希望是哪件事？' },
+            { id: 179, level: 3, category: 'family', question: '你小时候最想要父母对你说的一句话是什么？' },
+            { id: 180, level: 3, category: 'family', question: '你现在最想听家里谁说一句什么话？' },
+            // 主题二：代际差异
+            { id: 181, level: 3, category: 'family', question: '父母身上有哪一点，你确定自己不要变成那样？' },
+            { id: 182, level: 3, category: 'family', question: '你觉得我们家哪条规矩，其实早就可以不守了？' },
+            { id: 183, level: 3, category: 'family', question: '你和我这一代，最大的不同是什么？这一点让你难受吗？' },
+            { id: 184, level: 3, category: 'family', question: '家里长辈说过的哪句话，你现在开始怀疑了？' },
+            { id: 185, level: 3, category: 'family', question: '有哪些事你觉得是「为我好」，我却并不这么觉得？' },
+            { id: 186, level: 3, category: 'family', question: '你希望我怎么对待你和我完全不同的选择？' },
+            { id: 187, level: 3, category: 'family', question: '我们家有什么话题是不能摆到桌面上的？为什么？' },
+            { id: 188, level: 3, category: 'family', question: '你的父母当年那样对你，你现在理解他们了吗？' },
+            { id: 189, level: 3, category: 'family', question: '如果让你重新养一次孩子，你会改掉哪一件事？' },
+            { id: 190, level: 3, category: 'family', question: '你觉得我们之间最深的代沟是哪一件事？' },
+            // 主题三：责任与期待
+            { id: 191, level: 3, category: 'family', question: '你对我最大的期待是什么？说出口会不会太沉重？' },
+            { id: 192, level: 3, category: 'family', question: '你觉得我在这个家里，应该承担哪一部分？' },
+            { id: 193, level: 3, category: 'family', question: '有什么是你一直替全家人扛着、却没人问过你的？' },
+            { id: 194, level: 3, category: 'family', question: '你希望我以后怎么照顾你？这个话题你愿意谈吗？' },
+            { id: 195, level: 3, category: 'family', question: '你有没有为了这个家，放弃过自己很想做的事？' },
+            { id: 196, level: 3, category: 'family', question: '家里哪件事让你觉得「我必须负责」，可是你也累了？' },
+            { id: 197, level: 3, category: 'family', question: '你希望我将来做决定的时候，先问谁的意见？' },
+            { id: 198, level: 3, category: 'family', question: '你觉得我们家的钱，应该由谁说了算？为什么？' },
+            { id: 199, level: 3, category: 'family', question: '你有没有希望过自己不用那么懂事？' },
+            { id: 200, level: 3, category: 'family', question: '你最不想让家里人为你操心的，是哪一件事？' },
+            // 主题四：失去与和解
+            { id: 201, level: 3, category: 'family', question: '家里有没有一个已经不在的人，你很想再和他聊一次？' },
+            { id: 202, level: 3, category: 'family', question: '有什么事你到现在还没能原谅家里某个人？' },
+            { id: 203, level: 3, category: 'family', question: '你最想跟哪位家人和解？卡住的地方是什么？' },
+            { id: 204, level: 3, category: 'family', question: '如果可以对家里任何一个人说句真心话，你会对谁说？' },
+            { id: 205, level: 3, category: 'family', question: '你会不会有时候想逃离这个家？那时候发生了什么？' },
+            { id: 206, level: 3, category: 'family', question: '有没有一件家里的旧事，一直没人愿意再提？' },
+            { id: 207, level: 3, category: 'family', question: '你觉得我们家最需要被说出口的一句道歉是什么？' },
+            { id: 208, level: 3, category: 'family', question: '你希望将来别人怎么记住我们这个家？' },
+            { id: 209, level: 3, category: 'family', question: '你想留住家里的哪个瞬间？你怕它被忘掉吗？' },
+            { id: 210, level: 3, category: 'family', question: '如果现在能回到家里的某一天，你会回到哪天？' },
+
+            // 🧘 自我 - Level 3（40 张）
+            // 主题一：自我认知
+            { id: 211, level: 3, category: 'self', question: '你身上有哪一部分，是你一直藏起来、不敢让别人看见的？' },
+            { id: 212, level: 3, category: 'self', question: '如果没有人会评价你，你最想过成什么样子？' },
+            { id: 213, level: 3, category: 'self', question: '你做什么事的时候，会完全忘记时间？' },
+            { id: 214, level: 3, category: 'self', question: '别人对你的哪个评价，你其实一直不太服气？' },
+            { id: 215, level: 3, category: 'self', question: '你在什么时候最像真正的自己？那一刻在做什么？' },
+            { id: 216, level: 3, category: 'self', question: '有哪个关于你的说法是错的，但你一直没去纠正？' },
+            { id: 217, level: 3, category: 'self', question: '你最不想被别人看见的缺点是什么？它是从哪来的？' },
+            { id: 218, level: 3, category: 'self', question: '你身上有哪个部分，是你最近才开始接受的？' },
+            { id: 219, level: 3, category: 'self', question: '如果要给自己写一句墓志铭，你现在会写什么？' },
+            { id: 220, level: 3, category: 'self', question: '你什么时候对自己最诚实？那时候在想什么？' },
+            // 主题二：恐惧与欲望
+            { id: 221, level: 3, category: 'self', question: '你最怕的不是失败，那是什么？' },
+            { id: 222, level: 3, category: 'self', question: '有什么事你嘴上说不在乎，其实很在意？' },
+            { id: 223, level: 3, category: 'self', question: '你心底最想要的东西，为什么一直没去争取？' },
+            { id: 224, level: 3, category: 'self', question: '如果没有人会失望，你明天最想做什么？' },
+            { id: 225, level: 3, category: 'self', question: '你怕别人在你身上发现什么，是你自己也不愿承认的？' },
+            { id: 226, level: 3, category: 'self', question: '有什么欲望是你觉得说出来会显得很自私的？' },
+            { id: 227, level: 3, category: 'self', question: '你最近一次真的生气，是在什么时候？为什么？' },
+            { id: 228, level: 3, category: 'self', question: '你更怕被忽视，还是更怕被看穿？' },
+            { id: 229, level: 3, category: 'self', question: '如果失败不会有任何代价，你会去试哪一件事？' },
+            { id: 230, level: 3, category: 'self', question: '你心里有没有一件事，想去做却不敢告诉任何人？' },
+            // 主题三：意义与价值
+            { id: 231, level: 3, category: 'self', question: '你在什么事情上愿意花时间，却从不觉得是浪费？' },
+            { id: 232, level: 3, category: 'self', question: '如果明天不用为钱发愁，你会把日子过成什么样？' },
+            { id: 233, level: 3, category: 'self', question: '你希望自己老了以后，别人用什么词形容你？' },
+            { id: 234, level: 3, category: 'self', question: '哪件事让你觉得「这辈子做对了」？' },
+            { id: 235, level: 3, category: 'self', question: '你愿意为谁、为什么事，付出自己最好的几年？' },
+            { id: 236, level: 3, category: 'self', question: '你觉得活得值不值，是由什么决定的？' },
+            { id: 237, level: 3, category: 'self', question: '你做的哪件事，就算没有一个人看见也值得？' },
+            { id: 238, level: 3, category: 'self', question: '如果只能留下一个身份，你希望是哪一个？' },
+            { id: 239, level: 3, category: 'self', question: '有什么是你愿意一直做下去、哪怕永远不出名的？' },
+            { id: 240, level: 3, category: 'self', question: '你觉得什么样的一天，算是没有白过？' },
+            // 主题四：改变与接纳
+            { id: 241, level: 3, category: 'self', question: '你最想改掉自己身上的哪一点？试过几次了？' },
+            { id: 242, level: 3, category: 'self', question: '有哪件事你已经努力很久，还没能原谅自己？' },
+            { id: 243, level: 3, category: 'self', question: '你想成为的那种人，和现在的你差在哪里？' },
+            { id: 244, level: 3, category: 'self', question: '如果允许自己慢一点，你会先放下什么？' },
+            { id: 245, level: 3, category: 'self', question: '你身上有什么是你不打算再改了？为什么？' },
+            { id: 246, level: 3, category: 'self', question: '你最想对十年前的自己说的一句话是什么？' },
+            { id: 247, level: 3, category: 'self', question: '有哪个念头你反复想改掉，却总是回来？' },
+            { id: 248, level: 3, category: 'self', question: '你希望别人怎么看待你正在改变的那一部分？' },
+            { id: 249, level: 3, category: 'self', question: '接纳自己这件事，你走到哪一步了？' },
+            { id: 250, level: 3, category: 'self', question: '你准备好放下哪一件事了？为什么是现在？' }
         ];

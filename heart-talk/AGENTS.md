@@ -15,7 +15,7 @@
   - `card-service.js` 筛选、洗牌、按文本去重、抽卡队列（纯函数，可单测）
   - `history-store.js` 历史记录读写（全部返回布尔值，调用方必须检查）
 - `src/ui/render.js`：渲染卡牌、进度、历史列表
-- `src/data/cards.js`：130 张卡（题目文本有 7 组重复，属设计意图，见下）
+- `src/data/cards.js`：250 张卡（题目文本有 7 组重复，属设计意图，见下）
 - `src/styles.css`：本工具样式；基础变量来自 `../shared/theme.css`
 - `sw.js` / `manifest.webmanifest` / `icons/`：PWA
 - `heart-talk-cards-offline.html`：**自动生成，勿手改**，离线单文件包
@@ -50,11 +50,20 @@ CacheStorage 按 **origin** 共享，不受 SW scope 限制。历史上三个工
 
 ## 卡牌数据
 
-- 130 张，`level` 1~3，`category` 为 couple/friend/family/self
-- **level 3 只在 couple 下存在**（40 张）。friend/family/self 的三级按钮由
-  `pruneLevelFilters()` 动态隐藏；若将来补了三级卡，代码会自动放出来
-- 7 组题干逐字重复（同一句话在多个场景都成立），**不删**。抽卡时由
-  `dedupeByQuestion()` 保证一轮内不出现重复题面，所以一轮是 121 题而非 130 张
+- 250 张，`level` 1~3，`category` 为 couple/friend/family/self
+- `id` 必须连续 1..250 且无重复，新增卡从末尾追加。历史记录里存了整张卡对象
+  （含 `id`），**不要重排已有 id**，否则老记录的关联会错位
+- 四个类别都有三级卡（各 40 张），所以四个「三级」按钮都会出现。
+  `pruneLevelFilters()` 仍按 `filterCards(...).length === 0` 动态隐藏：
+  将来若某类别三级被清空，按钮会自动消失，不需要改 JS
+- 三级卡按主题分组，每类四个主题、每个主题 10 张：
+  friend（信任与边界 / 差异与疏远 / 陪伴与支持 / 告别与遗憾）、
+  family（表达爱 / 代际差异 / 责任与期待 / 失去与和解）、
+  self（自我认知 / 恐惧与欲望 / 意义与价值 / 改变与接纳）
+- 7 组题干（9 张）逐字重复，同一句话在多个场景都成立，**有意保留**。抽卡时由
+  `dedupeByQuestion()` 保证一轮内不出现重复题面，所以一轮是 241 题而非 250 张
+- 新增卡时在 `scripts/selfcheck-heart-talk.mjs` 与 `selfcheck-offline-bundle.mjs`
+  里同步写死的总张数/题面数，两个自检就是防「改了数据忘了改断言」的
 
 ## 存储
 

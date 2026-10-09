@@ -47,6 +47,6 @@ const grab = (text) => {
 assert.equal(grab(html), grab(srcText), "离线包卡数据与 src/data/cards.js 必须逐字一致");
 
 const count = (grab(html).match(/\bid:\s*\d+/g) || []).length;
-assert.equal(count, 130, `卡数应为 130，实际 ${count}`);
+assert.equal(count, 250, `卡数应为 250，实际 ${count}`);
 
 console.log(`selfcheck ok: 离线包无死链、数据一致（${count} 张卡）`);
