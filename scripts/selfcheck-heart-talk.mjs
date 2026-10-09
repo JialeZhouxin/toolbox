@@ -74,6 +74,26 @@ assert.deepEqual(
     assert.equal(c.question, c.question.trim(), `卡 ${c.id} 首尾有空白`);
   }
 
+  // 人称一致性：题目是「我」当面问「你」，所以引号里若用第一人称，
+  // 指的是答话人，会与句首的「你」打架。id196 原文
+  // 「家里哪件事让你觉得「我必须负责」，可是你也累了？」就是这种病。
+  // 只查引号内容 —— 引号外的「我」是提问者，合法。
+  const SELF_PRONOUN_IN_QUOTE = /「[^」]*我[^」]*」/;
+  const QUOTED_THOUGHT = /(觉得|认为|说|想|问)「/;
+  for (const c of cards) {
+    if (QUOTED_THOUGHT.test(c.question) && SELF_PRONOUN_IN_QUOTE.test(c.question)) {
+      assert.fail(
+        `卡 ${c.id} 引号内的「我」与句首的「你」人称冲突（若确为引述他人话语，请调整措辞）：${c.question}`
+      );
+    }
+  }
+
+  // 半角引号混用：中文正文里应统一用「」，半角 " 会显得像直引号误入
+  // （老卡 id76 是历史遗留，此处只查新增部分 id>=131）
+  for (const c of cards.filter((x) => x.id >= 131)) {
+    assert.ok(!c.question.includes('"'), `卡 ${c.id} 使用半角双引号，应改用「」：${c.question}`);
+  }
+
   // 四个类别都要有三级卡，否则 UI 的三级按钮会被 pruneLevelFilters 隐藏
   const l3cats = new Set(cards.filter((c) => c.level === 3).map((c) => c.category));
   for (const cat of ["couple", "friend", "family", "self"]) {
