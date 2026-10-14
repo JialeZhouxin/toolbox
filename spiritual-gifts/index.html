@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>你的属灵恩赐测试表</title>
+  <!-- 依赖已本地化到 vendor/（Tailwind 3、Vue 3.5.44、Chart.js 4.5.1、Geist Sans），断网可用。
+       升级：重新下载同路径文件覆盖 vendor/ 下同名文件即可。 -->
+    <style>
+    /* 本地化字体：原 cdn.jsdelivr.net/@fontsource/geist-sans，只含拉丁字形，
+       中文仍走系统字体，与线上表现一致 */
+    @font-face { font-family: 'Geist Sans'; font-style: normal; font-display: swap; font-weight: 400; src: url('./vendor/fonts/geist-sans-latin-400-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'Geist Sans'; font-style: normal; font-display: swap; font-weight: 600; src: url('./vendor/fonts/geist-sans-latin-600-normal.woff2') format('woff2'); }
+    @font-face { font-family: 'Geist Sans'; font-style: normal; font-display: swap; font-weight: 700; src: url('./vendor/fonts/geist-sans-latin-700-normal.woff2') format('woff2'); }
+    </style>
+  <script src="./vendor/tailwind.js">
+  </script>
+  <script>
+        tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: "#efe9fb", 100: "#d6cff5", 200: "#b3a8ed", 300: "#8c7de4",
+              400: "#6b5cdb", 500: "#5645d4", 600: "#4534b3", 700: "#3a2a99",
+              800: "#2a1f7a", 900: "#1a1458"
+            },
+            neutral: {
+              50: "#fafaf9", 100: "#f6f5f4", 200: "#ede9e4", 300: "#e5e3df",
+              400: "#c8c4be", 500: "#a4a097", 600: "#787671", 700: "#5d5b54",
+              800: "#37352f", 900: "#1a1a1a"
+            },
+          },
+          animation: {
+            "float": "float 6s ease-in-out infinite",
+            "float-slow": "float 8s ease-in-out infinite",
+            "pulse-glow": "pulseGlow 2s ease-in-out infinite",
+            "bounce-in": "bounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards",
+            "scale-check": "scaleCheck 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)",
+            "fade-slide-up": "fadeSlideUp 0.5s ease-out forwards",
+            "slide-down": "slideDown 0.3s ease-out forwards",
+            "progress-pulse": "progressPulse 0.4s ease-out"
+          },
+          keyframes: {
+            float: {
+              "0%, 100%": { transform: "translateY(0) rotate(0deg)" },
+              "33%": { transform: "translateY(-15px) rotate(1deg)" },
+              "66%": { transform: "translateY(-8px) rotate(-0.5deg)" }
+            },
+            pulseGlow: {
+              "0%, 100%": { boxShadow: "0 0 20px rgba(86, 69, 212, 0.3)" },
+              "50%": { boxShadow: "0 0 40px rgba(86, 69, 212, 0.6)" }
+            },
+            bounceIn: {
+              "0%": { opacity: "0", transform: "scale(0.8)" },
+              "60%": { transform: "scale(1.05)" },
+              "100%": { opacity: "1", transform: "scale(1)" }
+            },
+            scaleCheck: {
+              "0%": { transform: "scale(1)" },
+              "50%": { transform: "scale(1.15)" },
+              "100%": { transform: "scale(1)" }
+            },
+            fadeSlideUp: {
+              from: { opacity: "0", transform: "translateY(20px)" },
+              to: { opacity: "1", transform: "translateY(0)" }
+            },
+            slideDown: {
+              from: { opacity: "0", transform: "translateY(-10px)" },
+              to: { opacity: "1", transform: "translateY(0)" }
+            },
+            progressPulse: {
+              "0%": { transform: "scaleX(1)" },
+              "50%": { transform: "scaleX(1.03)" },
+              "100%": { transform: "scaleX(1)" }
+            }
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Geist Sans', 'Inter', -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f6f5f4; color: #37352f; }
+
+    .option-btn { transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1); cursor: pointer; user-select: none; position: relative; }
+    .option-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(86, 69, 212, 0.2); }
+    .option-btn.selected { transform: translateY(-2px) scale(1.02); box-shadow: 0 6px 20px rgba(86, 69, 212, 0.3); }
+    .option-btn:active:not(.selected) { transform: scale(0.96); }
+
+    .q-nav-dot { width: 20px; height: 20px; border-radius: 4px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; }
+    .q-nav-dot:hover { transform: scale(1.2); }
+
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in-up { animation: fadeInUp 0.5s ease forwards; }
+
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    .slide-down { animation: slideDown 0.3s ease forwards; }
+
+    @keyframes scaleIn { from { opacity: 0; transform: scale(0.92) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    .scale-in { animation: scaleIn 0.3s ease forwards; }
+
+    .bar-fill { transition: width 1s ease-out; }
+
+
+
+    .modal-overlay { background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px); }
+
+    .result-card { transition: all 0.3s ease; }
+    .result-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(86, 69, 212, 0.15); }
+
+    .category-label { font-size: 11px; fill: #64748b; }
+
+    .chart-wrapper { position: relative; width: 100%; max-width: 500px; margin: 0 auto; }
+  
+.glass {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+.glass-card {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+.text-gradient {
+  background: linear-gradient(135deg, #5645d4, #8c7de4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.animate-slide-down { animation: slideDown 0.3s ease-out forwards; }
+.count-up { animation: fadeSlideUp 0.3s ease-out; }
+.card-enter { opacity: 0; transform: translateY(16px); }
+.card-enter-active { transition: all 0.4s ease-out; }
+.card-enter-done { opacity: 1; transform: translateY(0); }
+
+.medal-gold {
+  filter: drop-shadow(0 0 20px rgba(255, 200, 0, 0.4));
+}
+.medal-silver {
+  filter: drop-shadow(0 0 16px rgba(180, 180, 200, 0.4));
+}
+.medal-bronze {
+  filter: drop-shadow(0 0 16px rgba(205, 127, 50, 0.35));
+}
+.result-card-glow {
+  transition: all 0.3s ease;
+}
+.result-card-glow:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 48px rgba(86, 69, 212, 0.2);
+}
+
+.def-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease-out, opacity 0.25s ease-out;
+  opacity: 0;
+}
+.def-content.open {
+  max-height: 500px;
+  opacity: 1;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #c8c4be; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #a4a097; }
+
+::selection { background: rgba(86, 69, 212, 0.2); color: #2a1f7a; }
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  @page { margin: 1.5cm; size: A4; }
+  body { font-size: 11pt; color: #000; background: #fff; }
+  .fixed, .sticky, .modal-overlay, .q-nav-dot, #app > div > button.fixed { display: none !important; }
+  .def-content { max-height: none !important; opacity: 1 !important; overflow: visible !important; }
+  .result-card-glow, .result-card, [class*="rounded-2xl"] { break-inside: avoid; page-break-inside: avoid; box-shadow: none !important; }
+  .bg-white, .bg-primary-50, .bg-neutral-50 { background: #fff !important; }
+  .ring-2 { ring: none !important; }
+  .no-print { display: none !important; }
+}
+
+/* ===== DARK MODE OVERRIDES ===== */
+.dark body { background: #0b0b14 !important; color: #e8e4f0 !important; }
+.dark .bg-white { background-color: #14142a !important; }
+.dark .bg-white\/80 { background-color: rgba(20,20,42,0.8) !important; }
+.dark .bg-primary-50 { background-color: #1a1640 !important; }
+.dark .bg-primary-100 { background-color: #241e50 !important; }
+.dark .bg-primary-50\/50 { background-color: rgba(26,22,64,0.5) !important; }
+.dark .bg-neutral-100 { background-color: #1e1e38 !important; }
+.dark .bg-neutral-50 { background-color: #16162e !important; }
+.dark .bg-neutral-50\/80 { background-color: rgba(22,22,46,0.8) !important; }
+.dark .from-white { --tw-gradient-from: #14142a !important; }
+.dark .to-primary-50\/50 { --tw-gradient-to: rgba(26,22,64,0.5) !important; }
+.dark .to-primary-100\/50 { --tw-gradient-to: rgba(36,30,80,0.5) !important; }
+.dark .from-primary-50 { --tw-gradient-from: #1a1640 !important; }
+.dark .from-primary-100\/50 { --tw-gradient-from: rgba(36,30,80,0.5) !important; }
+.dark \[class*="from-primary-"] { --tw-gradient-from: #1a1640 !important; }
+.dark .text-neutral-700 { color: #d1cce0 !important; }
+.dark .text-neutral-600 { color: #c0bcd0 !important; }
+.dark .text-neutral-500 { color: #a8a4bc !important; }
+.dark .text-neutral-400 { color: #8a86a0 !important; }
+.dark .text-neutral-300 { color: #6b6880 !important; }
+.dark .text-primary-700 { color: #b3a8ed !important; }
+.dark .text-primary-800 { color: #ccc4f5 !important; }
+.dark .text-primary-600 { color: #8c7de4 !important; }
+.dark .text-primary-500 { color: #6b5cdb !important; }
+.dark .text-primary-400 { color: #5645d4 !important; }
+.dark .text-primary-100 { color: #d6cff5 !important; }
+.dark .text-primary-200 { color: #b3a8ed !important; }
+.dark .border-neutral-100 { border-color: #2a2a4a !important; }
+.dark .border-neutral-200 { border-color: #35355a !important; }
+.dark .border-primary-100 { border-color: #3a2a6a !important; }
+.dark .border-primary-200 { border-color: #4a3a8a !important; }
+.dark .shadow-sm { box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important; }
+.dark .shadow-md { box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important; }
+.dark .shadow-lg { box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important; }
+.dark .shadow-2xl { box-shadow: 0 25px 60px rgba(0,0,0,0.6) !important; }
+.dark .shadow-primary-200 { box-shadow: 0 4px 14px rgba(86,69,212,0.15) !important; }
+.dark .ring-primary-300 { --tw-ring-color: rgba(140,125,228,0.4) !important; }
+.dark .border-b { border-bottom-color: #2a2a4a !important; }
+.dark .border-t { border-top-color: #2a2a4a !important; }
+.dark .ring-2 { --tw-ring-color: rgba(140,125,228,0.5) !important; }
+.dark .bg-primary-500 { background-color: #5645d4 !important; }
+.dark .bg-primary-400 { background-color: #6b5cdb !important; }
+.dark .bg-primary-400\/20 { background-color: rgba(107,92,219,0.2) !important; }
+.dark .bg-primary-300\/15 { background-color: rgba(140,125,228,0.15) !important; }
+.dark .bg-primary-200\/10 { background-color: rgba(179,168,237,0.1) !important; }
+.dark .from-primary-400 { --tw-gradient-from: #6b5cdb !important; }
+.dark .via-primary-500 { --tw-gradient-via: #5645d4 !important; }
+.dark .to-primary-700 { --tw-gradient-to: #3a2a99 !important; }
+.dark .from-primary-300 { --tw-gradient-from: #8c7de4 !important; }
+.dark .to-primary-400 { --tw-gradient-to: #6b5cdb !important; }
+.dark .to-primary-500 { --tw-gradient-to: #5645d4 !important; }
+.dark .from-amber-50 { --tw-gradient-from: #2a2010 !important; }
+.dark .to-amber-100\/50 { --tw-gradient-to: rgba(42,32,16,0.5) !important; }
+.dark .text-amber-700 { color: #d4a84b !important; }
+.dark .text-amber-400 { color: #f0c050 !important; }
+.dark .text-amber-500 { color: #e0b040 !important; }
+.dark .border-amber-200 { border-color: #4a3a1a !important; }
+.dark .from-emerald-50 { --tw-gradient-from: #102a20 !important; }
+.dark .to-emerald-100\/50 { --tw-gradient-to: rgba(16,42,32,0.5) !important; }
+.dark .text-emerald-700 { color: #50c090 !important; }
+.dark .text-emerald-400 { color: #60d0a0 !important; }
+.dark .border-emerald-200 { border-color: #1a4a3a !important; }
+.dark .from-rose-50 { --tw-gradient-from: #2a1020 !important; }
+.dark .to-rose-100\/50 { --tw-gradient-to: rgba(42,16,32,0.5) !important; }
+.dark .text-rose-700 { color: #d06080 !important; }
+.dark .text-rose-400 { color: #e08090 !important; }
+.dark .border-rose-200 { border-color: #4a2a3a !important; }
+.dark .from-primary-200 { --tw-gradient-from: #4a3a7a !important; }
+.dark .to-primary-300 { --tw-gradient-to: #6a5a9a !important; }
+.dark .from-primary-200 { --tw-gradient-from: #4a3a7a !important; }
+.dark .glass { background: rgba(255,255,255,0.06) !important; border-color: rgba(255,255,255,0.08) !important; }
+.dark .glass-card { background: rgba(20,20,42,0.6) !important; border-color: rgba(255,255,255,0.08) !important; }
+.dark .modal-overlay { background: rgba(0,0,0,0.7) !important; }
+.dark .option-btn { background-color: #14142a !important; border-color: #2a2a4a !important; color: #a8a4bc !important; }
+.dark .option-btn.selected { background-color: #1a1640 !important; border-color: #5645d4 !important; color: #b3a8ed !important; }
+.dark .option-btn:hover:not(.selected) { border-color: #4a3a7a !important; background-color: rgba(26,22,64,0.5) !important; }
+.dark .selected .text-neutral-300 { color: #6b5cdb !important; }
+.dark .q-nav-dot\:not(\.bg-primary-500) { background-color: #1e1e38 !important; color: #6b6880 !important; }
+.dark .q-nav-dot:hover { background-color: #2a2a4a !important; }
+.dark .bg-gradient-to-br\.from-primary-400\.via-primary-500\.to-primary-700 { background: linear-gradient(135deg, #3a2a7a, #2a1f5a, #1a1440) !important; }
+.dark .sticky { background-color: rgba(20,20,42,0.95) !important; }
+.dark .def-content .bg-primary-50\/50 { background-color: rgba(26,22,64,0.5) !important; }
+.dark \[class*="result-card"] { background-color: #14142a !important; border-color: #2a2a4a !important; }
+
+/* ===== EXPORT BUTTONS ===== */
+.export-btn {
+  transition: all 0.2s ease;
+  cursor: pointer;
+  user-select: none;
+}
+.export-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(86, 69, 212, 0.25);
+}
+.export-btn:active {
+  transform: translateY(0);
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
+/* 返回工具箱链接（与其它工具一致）；本页无 data-theme，固定浅色底 */
+.back-link {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 60;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  color: #5645d4;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(86, 69, 212, 0.2);
+  text-decoration: none;
+}
+.back-link:hover { background: #fff; }
+.dark .back-link { color: #b3a8ed; background: rgba(20, 20, 42, 0.8); border-color: rgba(140, 125, 228, 0.35); }
+</style>
+</head>
+<body>
+
+  <a class="back-link" href="../">← 返回工具箱</a>
+
+  <div id="app">
+    <!-- ========== RESTORE DIALOG ========== -->
+    <transition name="fade">
+      <div v-if="showRestoreDialog" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay" @click.self="showRestoreDialog = false">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full scale-in">
+          <div class="text-center">
+            <div class="text-4xl mb-4">📋</div>
+            <h2 class="text-xl font-bold text-primary-800 mb-2">检测到上次作答记录</h2>
+            <p class="text-neutral-500 mb-6">你之前已经完成了 <strong class="text-primary-600">{{ savedCount }}</strong> 道题，是否继续上次的作答？</p>
+            <div class="flex gap-3 justify-center">
+              <button @click="restoreAnswers" class="px-6 py-3 bg-primary-500 text-white rounded-xl font-semibold hover:bg-primary-600 transition">继续作答</button>
+              <button @click="clearAndStart" class="px-6 py-3 bg-neutral-100 text-neutral-600 rounded-xl font-semibold hover:bg-neutral-200 transition">重新开始</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- ========== JUMP MODAL (mobile) ========== -->
+    <transition name="fade">
+      <div v-if="showJumpModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay" @click.self="showJumpModal = false">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto scale-in" @click.stop>
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-primary-800">跳转至题目</h3>
+            <button @click="showJumpModal = false" class="text-neutral-400 hover:text-neutral-600 text-2xl">&times;</button>
+          </div>
+          <div class="grid grid-cols-10 gap-1.5">
+            <template v-for="q in questions" :key="q.id">
+              <div @click="jumpTo(q.id); showJumpModal = false"
+                class="q-nav-dot w-full aspect-square text-xs"
+                :class="answers[q.id] !== undefined ? 'bg-primary-500 text-white' : 'bg-neutral-100 text-neutral-400 hover:bg-neutral-200'">
+                {{ q.id }}
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- ========== SCORE PREVIEW MODAL ========== -->
+    <transition name="fade">
+      <div v-if="showScorePreview" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay" @click.self="showScorePreview = false">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col scale-in" @click.stop>
+          <!-- header -->
+          <div class="flex items-center justify-between p-5 border-b border-neutral-100">
+            <h3 class="text-lg font-bold text-primary-800 flex items-center gap-2">
+              📊 实时得分预览
+              <span class="text-sm font-normal text-neutral-400">({{ answeredCount }}/125 已答)</span>
+            </h3>
+            <button @click="showScorePreview = false" class="text-neutral-400 hover:text-neutral-600 text-2xl leading-none">&times;</button>
+          </div>
+          <!-- body -->
+          <div class="flex-1 overflow-y-auto p-5 space-y-2">
+            <div v-for="item in liveScores" :key="item.key"
+              class="flex items-center gap-3 py-2 px-3 rounded-xl transition"
+              :class="item.answered === 5 ? 'bg-primary-50' : 'bg-neutral-50'">
+              <!-- rank badge -->
+              <div class="w-6 text-center flex-shrink-0">
+                <span v-if="item.rank <= 3" class="text-sm">{{ ['🥇','🥈','🥉'][item.rank-1] }}</span>
+                <span v-else-if="item.rank <= 6" class="text-xs font-bold text-amber-500">#{{ item.rank }}</span>
+                <span v-else class="text-xs text-neutral-300">{{ item.rank }}</span>
+              </div>
+              <!-- category name -->
+              <div class="w-16 text-sm font-medium text-neutral-600 flex-shrink-0">{{ item.key }}.{{ item.name }}</div>
+              <!-- progress dots -->
+              <div class="flex gap-1 flex-shrink-0">
+                <div v-for="i in 5" :key="i" class="w-2.5 h-2.5 rounded-full"
+                  :class="i <= getAnsweredInCategory(item.key) ? 'bg-primary-400' : 'bg-neutral-200'"></div>
+              </div>
+              <!-- score bar -->
+              <div class="flex-1 h-3 bg-neutral-100 rounded-full overflow-hidden min-w-[40px]">
+                <div class="h-full rounded-full transition-all duration-300"
+                  :class="item.score >= 12 ? 'bg-gradient-to-r from-primary-400 to-primary-500' : item.score >= 8 ? 'bg-gradient-to-r from-primary-300 to-primary-400' : 'bg-gradient-to-r from-primary-200 to-primary-300'"
+                  :style="{ width: Math.max(item.score/15*100, 4) + '%' }"></div>
+              </div>
+              <!-- score number -->
+              <div class="w-10 text-right text-sm font-bold flex-shrink-0"
+                :class="item.answered === 5 ? 'text-primary-600' : 'text-neutral-300'">
+                {{ item.score }}<span class="text-xs text-neutral-300">/15</span>
+              </div>
+            </div>
+            <!-- empty state -->
+            <div v-if="answeredCount === 0" class="text-center py-16 text-neutral-400">
+              <div class="text-5xl mb-4 opacity-50">📝</div>
+              <p class="text-base font-medium text-neutral-500">还没有作答任何题目</p>
+              <p class="text-sm mt-2 text-neutral-400">选择答案后，这里会实时更新得分</p>
+            </div>
+          </div>
+          <!-- footer -->
+          <div class="p-4 border-t border-neutral-100 text-center text-xs text-neutral-400">
+            已完成的类别显示为 <span class="inline-block w-2.5 h-2.5 rounded-full bg-primary-400 align-middle"></span> 蓝色圆点
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- ========== MAIN LAYOUT ========== -->
+    <div class="flex">
+
+      <!-- ===== MOBILE FLOAT BUTTON ===== -->
+      <button @click="showJumpModal = true" title="跳转题目"
+        class="fixed right-4 bottom-24 z-40 w-14 h-auto pt-2 pb-1.5 bg-primary-500 text-white rounded-2xl shadow-lg flex flex-col items-center justify-center gap-0.5 hover:bg-primary-600 transition shadow-primary-200">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+        <span class="text-[10px] leading-none font-medium">跳转</span>
+      </button>
+
+      <!-- ===== MAIN CONTENT ===== -->
+      <main class="flex-1">
+
+        <!-- ===== HERO ===== -->
+        <section class="relative overflow-hidden bg-gradient-to-br from-primary-400 via-primary-500 to-primary-700 text-white px-6 py-16 md:py-24">
+          <div class="absolute inset-0 overflow-hidden">
+            <div class="absolute -top-40 -left-40 w-80 h-80 bg-primary-400/20 rounded-full blur-3xl animate-float"></div>
+            <div class="absolute -bottom-20 -right-20 w-60 h-60 bg-primary-300/15 rounded-full blur-3xl animate-float-slow" style="animation-delay: -3s;"></div>
+            <div class="absolute top-1/3 right-1/4 w-40 h-40 bg-primary-200/10 rounded-full blur-2xl animate-float" style="animation-delay: -1.5s;"></div>
+            <div class="absolute inset-0 opacity-[0.04]"
+              style="background-image: radial-gradient(circle at 1px 1px, white 1px, transparent 0); background-size: 40px 40px;">
+            </div>
+          </div>
+          <div class="relative max-w-3xl mx-auto text-center">
+            <div class="text-5xl mb-6">✨</div>
+            <h1 class="text-3xl md:text-5xl font-bold mb-4 tracking-tight [text-shadow:0_0_40px_rgba(86,69,212,0.3)]">你的属灵恩赐测试表</h1>
+            <p class="text-lg md:text-xl text-primary-100 max-w-2xl mx-auto leading-relaxed">
+              完成125道题目，发现神赐给你的属灵恩赐。每道题根据你的真实经历，
+              选择「许多」「有些」「少少」「没有」之一。
+            </p>
+            <div class="mt-8 flex flex-wrap gap-3 justify-center text-sm text-primary-100">
+              <span class="px-3 py-1 glass rounded-full backdrop-blur-md text-primary-200">📝 125 道题</span>
+              <span class="px-3 py-1 glass rounded-full backdrop-blur-md text-primary-200">🎯 25 类恩赐</span>
+              <span class="px-3 py-1 glass rounded-full backdrop-blur-md text-primary-200">⏱ 约 15-20 分钟</span>
+              <span class="px-3 py-1 glass rounded-full backdrop-blur-md text-primary-200">💾 自动保存进度</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== PROGRESS BAR ===== -->
+        <div class="sticky top-0 z-30 bg-white/80 backdrop-blur-lg border-b border-neutral-100 shadow-sm">
+          <div class="max-w-3xl mx-auto px-6 py-3 relative">
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-neutral-500 font-medium">完成进度</span>
+              <div class="flex items-center gap-2">
+                <span class="text-primary-600 font-bold count-up" :key="answeredCount">{{ answeredCount }} / 125</span>
+                <button @click="showScorePreview = true" class="text-xs px-3 py-1.5 rounded-lg bg-primary-50 text-primary-600 hover:bg-primary-100 hover:text-primary-700 hover:shadow-sm hover:shadow-primary-100 transition-all duration-200 font-medium">
+                  📊 得分
+                </button>
+                <button @click="toggleDarkMode" class="text-xs px-3 py-1.5 rounded-lg transition-all duration-200 font-medium"
+                  :class="isDark ? 'bg-primary-100 text-primary-600' : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200'">
+                  {{ isDark ? '☀️' : '🌙' }}
+                </button>
+                <button @click="resetAll" class="text-xs px-3 py-1.5 rounded-lg bg-neutral-100 text-neutral-500 hover:bg-red-50 hover:text-red-500 hover:ring-1 hover:ring-red-200 transition-all font-medium">
+                  ↺
+                </button>
+              </div>
+            </div>
+            <div class="w-full h-2.5 bg-neutral-100 rounded-full mt-1.5 overflow-hidden">
+              <div class="h-full bg-gradient-to-r from-primary-400 to-primary-500 rounded-full transition-all duration-500" :style="{ width: progressPercent + '%' }"></div>
+            </div>
+            <!-- 分段指示器 -->
+            <div class="flex items-center gap-1 mt-1.5">
+              <template v-for="seg in 5" :key="seg">
+                <div class="flex-1 h-1 rounded-full transition-all duration-300"
+                  :class="answeredCount >= seg * 25 ? 'bg-primary-400' : answeredCount >= (seg-1) * 25 ? 'bg-primary-200' : 'bg-neutral-200'">
+                </div>
+              </template>
+            <!-- 里程碑提示 -->
+            <transition name="fade">
+              <div v-if="showMilestone"
+                class="absolute -bottom-12 left-1/2 -translate-x-1/2 bg-white rounded-xl px-5 py-2.5 shadow-lg border border-primary-100 text-sm font-semibold text-primary-700 whitespace-nowrap z-50 animate-slide-down">
+                {{ milestoneText }}
+              </div>
+            </transition>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== QUESTIONS ===== -->
+        <section class="max-w-3xl mx-auto px-6 py-8">
+          <div v-for="(q, index) in questions" :key="q.id" :id="'q' + q.id" class="mb-4">
+            <div class="bg-white rounded-2xl p-5 md:p-6 shadow-sm border border-neutral-100 transition-all duration-200"
+              :class="{ 'ring-2 ring-primary-300 shadow-md': focusedQuestion === q.id }">
+              <div class="flex items-start gap-4">
+                <!-- 颜色条 -->
+                <div class="flex-shrink-0 w-1 self-stretch rounded-full mt-3 mb-3" :class="(getCategoryColor(q.id) || {}).bar || ''"></div>
+                <div class="flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold transition-all duration-300"
+                  :class="answers[q.id] !== undefined ? 'bg-primary-500 text-white shadow-sm shadow-primary-200' : 'bg-neutral-100 text-neutral-400'">
+                  {{ q.id }}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-base md:text-lg leading-relaxed text-neutral-700 font-medium">{{ q.text }}</p>
+                  <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <template v-for="opt in options" :key="opt.value">
+                      <button @click="setAnswer(q.id, opt.value)"
+                        class="option-btn px-4 py-3 rounded-xl text-sm font-medium border-2 text-center transition-all relative overflow-hidden"
+                        :class="answers[q.id] === opt.value
+                          ? 'border-primary-500 bg-primary-50 text-primary-700 selected'
+                          : 'border-neutral-200 bg-white text-neutral-500 hover:border-primary-200 hover:bg-primary-50/50'">
+                        <div v-if="answers[q.id] === opt.value" 
+                          class="absolute -top-1 -right-1 w-5 h-5 bg-primary-500 rounded-full flex items-center justify-center text-white text-xs animate-scale-check shadow-sm shadow-primary-200">
+                          ✓
+                        </div>
+                        <span class="block text-xs text-neutral-400 mb-0.5">{{ opt.label }}</span>
+                        <span class="block text-lg font-bold" :class="answers[q.id] === opt.value ? 'text-primary-600' : 'text-neutral-300'">{{ opt.value }}</span>
+                      </button>
+                    </template>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== RESULTS SECTION ===== -->
+        <section v-if="allAnswered" id="results" class="bg-gradient-to-b from-white to-primary-50/50 border-t border-primary-100">
+          <div class="max-w-3xl mx-auto px-6 py-16">
+            <div class="text-center mb-12">
+              <div class="text-4xl mb-4">🎉</div>
+              <h2 class="text-3xl md:text-4xl font-bold text-primary-800 mb-2">你的测试结果</h2>
+              <p class="text-neutral-500">以下是根据你的作答计算出的属灵恩赐分析</p>
+            </div>
+
+            <!-- Top 3 Primary -->
+            <div class="mb-10">
+              <h3 class="text-lg font-bold text-primary-700 mb-4 flex items-center gap-2">
+                <span class="text-2xl">🏆</span> 主要恩赐（前三）
+              </h3>
+              <div class="grid md:grid-cols-3 gap-4">
+                <template v-for="(item, idx) in topGifts.slice(0,3)" :key="item.key">
+                  <div class="result-card-glow bg-white rounded-2xl p-6 shadow-md border border-primary-100 text-center relative overflow-hidden">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 opacity-20 rounded-full"
+                      :class="idx === 0 ? 'bg-yellow-300' : idx === 1 ? 'bg-slate-300' : 'bg-orange-300'"
+                      style="filter: blur(30px);">
+                    </div>
+                    <div class="relative">
+                      <div class="text-3xl mb-2" :class="['medal-gold','medal-silver','medal-bronze'][idx]">
+                        {{ ['🥇','🥈','🥉'][idx] }}
+                      </div>
+                      <div class="text-xl font-bold text-primary-700 mb-1">{{ item.name }}</div>
+                      <div class="text-3xl font-black text-primary-500 mb-2">{{ animatedScores[item.key] ?? 0 }}<span class="text-lg text-neutral-400">/15</span></div>
+                    <div class="w-full h-3 bg-primary-50 rounded-full overflow-hidden">
+                      <div class="h-full bg-gradient-to-r from-primary-400 to-primary-500 rounded-full bar-fill" :style="{ width: (item.score/15*100) + '%' }"></div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+
+            <!-- Next 3 Secondary -->
+            <div class="mb-10">
+              <h3 class="text-lg font-bold text-primary-700 mb-4 flex items-center gap-2">
+                <span class="text-2xl">🎗️</span> 次要恩赐（第四至六）
+              </h3>
+              <div class="grid md:grid-cols-3 gap-4">
+                <template v-for="(item, idx) in topGifts.slice(3,6)" :key="item.key">
+                  <div class="result-card bg-white rounded-2xl p-5 shadow-sm border border-neutral-100 text-center">
+                    <div class="text-lg font-bold text-neutral-600 mb-1">{{ item.name }}</div>
+                    <div class="text-2xl font-black text-primary-500 mb-2">{{ animatedScores[item.key] ?? 0 }}<span class="text-base text-neutral-400">/15</span></div>
+                    <div class="w-full h-2.5 bg-primary-50 rounded-full overflow-hidden">
+                      <div class="h-full bg-gradient-to-r from-primary-300 to-primary-400 rounded-full bar-fill" :style="{ width: (item.score/15*100) + '%' }"></div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+
+            <!-- All Categories Bar Chart -->
+            <div class="bg-white rounded-2xl p-6 shadow-md border border-neutral-100 mb-10">
+              <h3 class="text-lg font-bold text-primary-700 mb-6 flex items-center gap-2">
+                <span class="text-2xl">📊</span> 全部恩赐得分一览
+              </h3>
+              <div class="space-y-3">
+                <div v-for="(item, index) in sortedGifts" :key="item.key" class="flex items-center gap-3 animate-fade-slide-up" :style="{ animationDelay: index * 30 + 'ms' }">
+                  <div class="w-16 text-right text-sm font-medium text-neutral-500 flex-shrink-0">{{ item.key }}</div>
+                  <div class="w-20 text-sm text-neutral-700 flex-shrink-0 truncate" :title="item.name">{{ item.name }}</div>
+                  <div class="flex-1 h-6 bg-primary-50 rounded-full overflow-hidden relative">
+                    <div class="h-full rounded-full bar-fill flex items-center justify-end px-2 text-xs font-bold text-white"
+                      :class="item.score >= 12 ? 'bg-gradient-to-r from-primary-400 to-primary-500' : item.score >= 8 ? 'bg-gradient-to-r from-primary-300 to-primary-400' : 'bg-gradient-to-r from-primary-200 to-primary-300'"
+                      :style="{ width: Math.max((animatedScores[item.key] ?? 0)/15*100, 8) + '%' }">
+                      <span v-if="item.score >= 3">{{ item.score }}</span>
+                    </div>
+                  </div>
+                  <div class="w-8 text-right text-sm font-bold text-neutral-400 flex-shrink-0">{{ animatedScores[item.key] ?? 0 }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Radar Chart -->
+            <div class="bg-white rounded-2xl p-6 shadow-md border border-neutral-100 mb-10">
+              <h3 class="text-lg font-bold text-primary-700 mb-6 flex items-center gap-2">
+                <span class="text-2xl">🕸️</span> 恩赐雷达图
+              </h3>
+              <div class="chart-wrapper">
+                <canvas id="radarChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Gift Definitions -->
+            <div class="bg-white rounded-2xl p-6 md:p-8 shadow-md border border-neutral-100 mb-10">
+              <h3 class="text-lg font-bold text-primary-700 mb-2 flex items-center gap-2">
+                <span class="text-2xl">📖</span> 恩赐定义与经文参考
+              </h3>
+              <p class="text-sm text-neutral-400 mb-6">点击展开查看每种恩赐的详细定义和圣经出处</p>
+              <div class="space-y-2">
+                <div v-for="g in giftDefinitionsWithScores" :key="g.key"
+                  class="border border-neutral-100 rounded-xl overflow-hidden transition-all"
+                  :class="{
+                'ring-2 ring-primary-200 border-primary-200': expandedDef === g.key || g.key === topGifts[0]?.key || g.key === topGifts[1]?.key || g.key === topGifts[2]?.key
+              }">
+                  <button @click="toggleDef(g.key)"
+                    class="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-primary-50/50 transition"
+                    :class="expandedDef === g.key ? 'bg-primary-50' : ''">
+                    <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                      :class="g.score > 0 ? 'bg-primary-500 text-white' : 'bg-neutral-100 text-neutral-400'">{{ g.key }}</div>
+                    <div class="flex-1 min-w-0">
+                      <span class="text-sm font-semibold text-neutral-700">{{ g.name }}</span>
+                      <span v-if="g.score > 0" class="ml-2 text-xs font-medium"
+                        :class="g.score >= 12 ? 'text-primary-600' : g.score >= 8 ? 'text-primary-500' : 'text-neutral-400'">
+                        {{ g.score }}分
+                      </span>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                      <div class="flex gap-0.5">
+                        <div v-for="i in 5" :key="i" class="w-1.5 h-1.5 rounded-full"
+                          :class="i <= g.answered ? 'bg-primary-400' : 'bg-neutral-200'"></div>
+                      </div>
+                      <span class="text-neutral-300 transition-transform duration-200"
+                        :class="expandedDef === g.key ? 'rotate-180' : ''">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                      </span>
+                    </div>
+                  </button>
+                  <div class="def-content" :class="expandedDef === g.key ? 'open' : ''">
+                  <div class="px-4 pb-4 pt-1 text-sm text-neutral-600 leading-relaxed border-t border-neutral-50">
+                    <p class="mb-2">{{ g.def }}</p>
+                    <div class="flex items-start gap-2 text-primary-700 bg-primary-50/50 rounded-lg p-3">
+                      <span class="text-base flex-shrink-0">📖</span>
+                      <span class="text-xs leading-relaxed">{{ g.scriptures }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Reflection Questions -->
+            <div class="bg-white rounded-2xl p-6 md:p-8 shadow-md border border-primary-100">
+              <h3 class="text-lg font-bold text-primary-700 mb-6 flex items-center gap-2">
+                <span class="text-2xl">💭</span> 恩赐与事奉反思
+              </h3>
+              <div class="space-y-6">
+                <div>
+                  <label class="block text-sm font-semibold text-neutral-600 mb-2">你的主要恩赐：</label>
+                  <div class="flex flex-wrap gap-2">
+                    <span v-for="(item, idx) in topGifts.slice(0,3)" :key="item.key"
+                      class="px-4 py-2 bg-primary-100 text-primary-700 rounded-lg text-sm font-semibold">
+                      {{ ['🥇','🥈','🥉'][idx] }} {{ item.name }}（{{ item.score }}分）
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-neutral-600 mb-2">你的次要恩赐：</label>
+                  <div class="flex flex-wrap gap-2">
+                    <span v-for="item in topGifts.slice(3,6)" :key="item.key"
+                      class="px-4 py-2 bg-primary-50 text-primary-600 rounded-lg text-sm font-medium">
+                      {{ item.name }}（{{ item.score }}分）
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-neutral-600 mb-2">在基督身体内，你目前担任（正式及非正式）什么事奉？</label>
+                  <textarea v-model="reflection1" rows="3" class="w-full px-4 py-3 rounded-xl border border-neutral-200 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none transition resize-none text-sm"></textarea>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-neutral-600 mb-2">哪项事奉非你恩赐所长？神可能呼召你考虑变换。</label>
+                  <textarea v-model="reflection2" rows="3" class="w-full px-4 py-3 rounded-xl border border-neutral-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition resize-none text-sm"></textarea>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-neutral-600 mb-2">在职业方面，你是专职事奉者，还是带职事奉信徒？</label>
+                  <textarea v-model="reflection3" rows="2" class="w-full px-4 py-3 rounded-xl border border-neutral-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition resize-none text-sm"></textarea>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-neutral-600 mb-2">考虑了你的恩赐组合和职业，你觉得最合宜的事奉模式是什么？按神给你特殊的恩赐，在基督身体内，最合宜的角色是什么？</label>
+                  <textarea v-model="reflection4" rows="3" class="w-full px-4 py-3 rounded-xl border border-neutral-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-100 outline-none transition resize-none text-sm"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== EXPORT SECTION ===== -->
+        <div class="border-t border-neutral-100 bg-white">
+          <div class="max-w-3xl mx-auto px-6 py-10 text-center">
+            <h3 class="text-lg font-bold text-neutral-700 mb-2">📥 导出与保存</h3>
+            <p class="text-sm text-neutral-400 mb-6">将你的测试结果导出为文档，方便保存或分享</p>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <button @click="exportFullReport"
+                class="export-btn flex flex-col items-center gap-2 px-4 py-5 rounded-2xl bg-gradient-to-br from-primary-50 to-primary-100/50 border border-primary-200 text-primary-700 hover:from-primary-100 hover:to-primary-200 transition-all">
+                <span class="text-2xl">📄</span>
+                <span class="text-sm font-semibold">完整报告</span>
+                <span class="text-xs text-primary-400">答案 + 得分 + 反思</span>
+              </button>
+              <button @click="exportScores"
+                class="export-btn flex flex-col items-center gap-2 px-4 py-5 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100/50 border border-emerald-200 text-emerald-700 hover:from-emerald-100 hover:to-emerald-200 transition-all">
+                <span class="text-2xl">📊</span>
+                <span class="text-sm font-semibold">得分结果</span>
+                <span class="text-xs text-emerald-400">恩赐得分与排名</span>
+              </button>
+              <button @click="exportAnswers"
+                class="export-btn flex flex-col items-center gap-2 px-4 py-5 rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100/50 border border-amber-200 text-amber-700 hover:from-amber-100 hover:to-amber-200 transition-all">
+                <span class="text-2xl">📝</span>
+                <span class="text-sm font-semibold">作答记录</span>
+                <span class="text-xs text-amber-400">125 道题答案</span>
+              </button>
+              <button @click="exportReflections"
+                class="export-btn flex flex-col items-center gap-2 px-4 py-5 rounded-2xl bg-gradient-to-br from-rose-50 to-rose-100/50 border border-rose-200 text-rose-700 hover:from-rose-100 hover:to-rose-200 transition-all">
+                <span class="text-2xl">💭</span>
+                <span class="text-sm font-semibold">反思</span>
+                <span class="text-xs text-rose-400">事奉反思内容</span>
+              </button>
+            </div>
+            <p class="text-xs text-neutral-300 mt-4">💡 文档将在新标签页打开，点击「🖨️ 打印 / 另存为 PDF」即可保存</p>
+          </div>
+        </div>
+
+        <!-- ===== FOOTER ===== -->
+        <footer class="bg-neutral-50/80 backdrop-blur-sm border-t border-neutral-100 py-10 text-center text-sm text-neutral-400">
+          <p>你的属灵恩赐测试表 &mdash; 免费开源工具</p>
+          <p class="mt-1">所有数据仅保存在你的浏览器本地</p>
+        </footer>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ===== CDN SCRIPTS ===== -->
+  <script src="./vendor/vue.global.prod.js">
+  </script>
+  <script src="./vendor/chart.umd.min.js">
+  </script>
+
+  <script>
+    // ===================== DATA =====================
+    const CATEGORY_COLORS = [
+      { bar: 'bg-primary-400', bg: 'bg-primary-50', border: 'border-primary-200' },
+      { bar: 'bg-emerald-400', bg: 'bg-emerald-50', border: 'border-emerald-200' },
+      { bar: 'bg-amber-400', bg: 'bg-amber-50', border: 'border-amber-200' },
+      { bar: 'bg-rose-400', bg: 'bg-rose-50', border: 'border-rose-200' },
+      { bar: 'bg-cyan-400', bg: 'bg-cyan-50', border: 'border-cyan-200' },
+    ];
+    function getCategoryColor(id) {
+      const colors = CATEGORY_COLORS || [];
+      const idx = Math.max(0, Math.min(colors.length - 1, Math.floor(((id || 1) - 1) / 5) % 5));
+      return colors[idx] || { bar: "bg-primary-400", bg: "bg-primary-50", border: "border-primary-200" };
+    }
+    
+    const CATEGORIES = [
+      { key: 'A', name: '预言' },
+      { key: 'B', name: '牧养' },
+      { key: 'C', name: '教导' },
+      { key: 'D', name: '智慧' },
+      { key: 'E', name: '知识' },
+      { key: 'F', name: '劝化' },
+      { key: 'G', name: '辨别诸灵' },
+      { key: 'H', name: '施惠（奉献）' },
+      { key: 'I', name: '帮助人' },
+      { key: 'J', name: '怜悯人' },
+      { key: 'K', name: '宣教' },
+      { key: 'L', name: '传福音' },
+      { key: 'M', name: '款待' },
+      { key: 'N', name: '信心' },
+      { key: 'O', name: '治理' },
+      { key: 'P', name: '行政' },
+      { key: 'Q', name: '神迹' },
+      { key: 'R', name: '医病' },
+      { key: 'S', name: '方言' },
+      { key: 'T', name: '翻方言' },
+      { key: 'U', name: '自愿清贫' },
+      { key: 'V', name: '独身' },
+      { key: 'W', name: '代祷' },
+      { key: 'X', name: '赶鬼' },
+      { key: 'Y', name: '执事' }
+    ];
+
+    const GIFT_DEFINITIONS = [
+      { key: 'A', name: '预言', def: '预言的恩赐就是神给与基督身体中部分会友的特别能力，使他们透过从神而来的声音，接受和传达神直接给他的子民的信息。', scriptures: '林前12:10,28；弗4:11-14；罗12:6；路7:26；徒15:32；徒21:9-11' },
+      { key: 'B', name: '牧养', def: '牧养的恩赐就是神给予基督身体中部份会友的特别能力，使他们为了一群信徒的属灵利益，负起长期的个人责任。', scriptures: '弗4:11-14；提前3:1-7；约10:1-18；彼前5:1-3' },
+      { key: 'C', name: '教导', def: '教导的恩赐就是神给予基督身体中部份会友特别的能力，使他们为了身体及其会友的健康和事工，传达适当的知识，使其他人能够学习。', scriptures: '林前12:28；弗4:11-14；罗12:7；徒18:24-28；徒20:20-21' },
+      { key: 'D', name: '智慧', def: '智慧的恩赐就是神给予基督身体中部分会友的特别能力，使他们知道圣灵的心意，获得亮光，把知识最适当地用在基督身体特殊的需要上。', scriptures: '林前2:1-13；林前12:8；徒6:3,10；雅1:5-6；彼后3:15-16' },
+      { key: 'E', name: '知识', def: '知识的恩赐就是神给予基督身体中部份会友的特别能力，使他们能发现、积聚、分析、和澄清与身体增长和幸福有关的资料和观念。', scriptures: '林前2:14；林前12:8；徒5:1-11；西2:2-3；林后11:6' },
+      { key: 'F', name: '劝化', def: '劝化的恩赐就是神给予基督身体中部份会友的特别能力，使他们用使人舒畅、安慰、鼓励和辅导的话去关怀身体中其他的会友，让这些会友得到帮助和医治。', scriptures: '罗12:8；提前4:13；来10:25；徒14:22' },
+      { key: 'G', name: '辨别诸灵', def: '辨别诸灵的恩赐就是神给予基督身体中部分会友的特别能力，使他们可以确实地知道，那些被怀疑是由神而来的行为，到底是属灵的、属人的，抑属撒但的。', scriptures: '徒16:16-18；约壹4:1-6；太16:21-23' },
+      { key: 'H', name: '施惠（奉献）', def: '施惠（奉献）的恩赐就是神给予基督身体中部份会友的特别能力，使他们用慷慨和喜乐的态度，把自己物质资源奉献给神的事工。', scriptures: '罗12:8；林后8:1-7；林后9:2-8；可12:41-44' },
+      { key: 'I', name: '帮助人', def: '帮助人的恩赐是神给予基督身体中部份会友的特别能力，使他们把才干投资于身体中其他会友的生命和事奉，让这些被帮助的人更有效地运用他们的属灵恩赐。', scriptures: '林前12:28；罗16:1-2；徒9:36；路8:2-3；可15:40-41' },
+      { key: 'J', name: '怜悯人', def: '怜悯人的恩赐就是神给予基督身体中部份会友的特别能力，使他们对忍受生理、心理或情绪痛苦的基督徒或非基督徒，感同身受和表示同情；而且把这些同情变成使人愉快的行为，籍以表达出基督的爱，和减轻别人的痛苦。', scriptures: '罗12:8；可9:41；徒16:33-34；路10:33-35；太20:29-34；太25:34-40；徒11:28-30' },
+      { key: 'K', name: '宣教', def: '宣教士的恩赐就是神给予基督身体中部份会友的特别能力，使他们在第二种文化中，运用他们其他的属灵恩赐去事奉。', scriptures: '林前9:19-23；徒8:4；徒13:2-3；徒22:21；罗10:15' },
+      { key: 'L', name: '传福音', def: '传福音的恩赐就是神给予基督身体中部份会友的特别能力，使他们能够适当地与非信徒分享福音，带领男女成为耶稣门徒，和成为基督身体中有责任感的会友。', scriptures: '弗4:11-14；提后4:5；徒8:5-6；徒8:26-40；徒14:21；徒21:8' },
+      { key: 'M', name: '款待', def: '款待的恩赐就是神给予基督身体中部份会友的特别能力，使他们开放家庭，并对那些需要食物和住宿的人表示欢迎。', scriptures: '彼前4:9；罗12:9-13；罗16:23；徒16:14-15；来13:1-2' },
+      { key: 'N', name: '信心', def: '信心的恩赐就是神给予基督身体中部份会友的特别能力，使他们能以格外的自信去分辨出神的旨意和目的，以完成他那等待完成的事工。', scriptures: '林前12:9；徒11:22-24；徒27:21-25；来11章；罗4:18-21' },
+      { key: 'O', name: '治理', def: '治理（领袖）的恩赐就是神给予基督身体中部份会友的特别能力，使他们按着神对将来的目的，定出目标，并将这些目标向别人传达，务求那些人能自愿的、与和谐的，为了神的荣耀，共同完成这些目标。', scriptures: '提前5:17；徒7:10；徒15:7-11；罗12:8；来13:17；路9:51' },
+      { key: 'P', name: '行政', def: '行政的恩赐就是神给予基督身体中部份会友的特别能力，使他们可以成为人类媒介，让神透过他们成就大有能力的事迹，对观察者而言，那根本就是改变了自然界的正常程序。', scriptures: '林前12:10,28；徒9:36-42；徒19:11-20；徒20:7-12；罗15:18-19；林后12:12' },
+      { key: 'Q', name: '神迹', def: '异能（神迹）的恩赐就是神给予基督身体中部份会友的特别能力，使他们可以成为人类媒介，让神透过他们成就大有能力的事迹，对观察者而言，那根本就是改变了自然界的正常程序。', scriptures: '林前12:10,28；徒9:36-42；徒19:11-20；徒20:7-12；罗15:18-19；林后12:12' },
+      { key: 'R', name: '医病', def: '医病的恩赐就是神给予基督身体中部份会友的特别能力，使他们可以成为人类媒介，让神透过他们，无须自然的方法，却医治疾病和恢复健康。', scriptures: '林前12:9,28；徒3:1-10；徒5:12-16；徒9:32-35；徒28:7-10' },
+      { key: 'S', name: '方言', def: '方言的恩赐就是给予基督身体中部份会友的特别能力，使他们（甲）以从未学过的语言向神说话，和/或（乙）透过他们从未学过的语言，接受从神而来的信息，并将之即时传达给神的子民。', scriptures: '林前12:10,28；14:13-19；徒2:1-13；徒10:44-46；徒19:1-7；可16:17' },
+      { key: 'T', name: '翻方言', def: '翻方言的恩赐就是给予基督身体中部份会友的特别能力，使他们把用方言传讲的信息翻成土话。', scriptures: '林前12:10,30；林前14:13；林前14:26-28' },
+      { key: 'U', name: '自愿清贫', def: '自愿清贫的恩赐就是神给予教会身体中部分会友的特别能力，使他们放弃物质的舒适和奢侈，选择一个在某一社会中相等于穷人程度的生活形式，使他更有效地去事奉神。', scriptures: '林前11:1-3；徒2:44-45；徒4:34-37；林后6:10；林后8:9' },
+      { key: 'V', name: '独身', def: '独身的恩赐就是神给予基督身体中部份会友的特别能力，使他们维持单身却感到享受，没有结婚却不因性的不正当引诱而受苦。', scriptures: '林前7:7-8；太19:10-12' },
+      { key: 'W', name: '代祷', def: '代祷的恩赐就是神给予基督身体中部份会友的特别能力，使他们比起平常的基督徒，可以更经常而长时间祷告，而且在他们祷告中看见频密而特殊的应验。', scriptures: '雅5:14-16；提前2:1-2；西1:9-12；西4:12-13；徒12:12；路22:41-44' },
+      { key: 'X', name: '赶鬼', def: '赶鬼的恩赐就是神给予基督身体中部份会友的特别能力，使他们能赶走恶魔或邪灵。', scriptures: '太12:22-32；路10:12-20；徒8:5-8；徒16:16-18' },
+      { key: 'Y', name: '执事', def: '执事的恩赐就是神给予基督身体中部份会友的特别能力，使他们在神的事工中找出还未满足的需要，使用可提供的资源，使这些需要得到满足，并帮助达成目标。', scriptures: '提后1:16-18；罗12:7；徒6:1-7；多3:14；加6:2,10' }
+    ];
+
+    const QUESTION_TEXTS = [
+      "我一直有个愿望，要传讲直接从神来的讯息，来建立鼓励和安慰别人。",
+      "我一直喜欢同一班人长期相处，与他们分享成功，分担失败。",
+      "人家告诉我，说我帮助他们很有意义地学习了《圣经》真理。",
+      "在我自己生命中，我有效地应用了属灵真理。",
+      "人家告诉我，说我帮助他们分析了《圣经》中很重要的事实。",
+      "我常说话鼓励那些动摇、受苦和失望的人。",
+      "教会的人发现我常常在别人还没注意的时候，就看穿虚伪。",
+      "我发觉我善于理财，所以能慷慨奉献支持神的工作。",
+      "我经常协助属灵领袖，以致他们能专注做最重要的事工。",
+      "我有一个愿望，要帮助那些身体或思觉有障碍的，来减轻他们的痛苦。",
+      "与别的种族或少数民族人相处，我觉得自在；他们也好像接纳我。",
+      "我有带领人相信耶稣，决志接受救恩。",
+      "我家的大门，一直为有需要留宿的人打开的。",
+      "在一群人当中，别人常是要我来决定异象和方向。",
+      "我讲话的时候，大家好像都听从。",
+      "在一群人当中，若果少了组织，我往往就填补这空缺。",
+      "人家能清楚指明，我的祷告，带出可以看到的神迹。",
+      "奉主耶稣的名，我被使用来即时医治疾病。",
+      "我讲方言。",
+      "有时候人家讲方言，我能感受到神要传达什么。",
+      "我可以生活得更舒适，但我选择与贫穷的人一同生活。",
+      "我是单身，而且很满足。",
+      "我每天起码祷告一小时。",
+      "我斥责邪灵，它们顺服我。",
+      "我喜欢教会叫我去做一些庶务。",
+      "籍着神，我向别人启示了将来要发生的事。",
+      "我乐意负起照料一群基督徒的属灵生命。",
+      "我觉得我能将《新约》对基督身体（教会）的健康和事奉，解释得适切。",
+      "对相当复杂的困难，我能天性地达至解决。",
+      "我对一些属灵真理有特别见解，别人说我帮到他们更亲近神。",
+      "有需要的时候，我能高效地动员别人参与事奉。",
+      "有时我能「看见」圣灵降临在某些人身上。",
+      "按照记录，我奉献大大超过十分之一来支持圣工。",
+      "别人告诉我，说我帮助了他们的事奉，更为高效。",
+      "别人有物质或身体上的缺乏，我肯去照料。",
+      "我觉得我能学会另一种语言，以致能在不同的文化当中服事。",
+      "我曾喜洋洋地向非信徒，适切清楚分享神怎样拯救我。",
+      "我喜欢负责教会聚餐及其他社交。",
+      "我相信神能行不可能之事，并且实实际际地看过他的作为。",
+      "其他基督徒跟从我的领导，因为他们相信我。",
+      "我享受整理细则，组织计划，安排人力、物力、时间，来叫事奉更有效。",
+      "神使用我这个人行出超然的神迹奇事。",
+      "我喜欢为病人祷告，因为我知道许多会得着医治。",
+      "我用曾学过的语言，向神的子民传达神对现况的讯息。",
+      "我翻方言，结果是基督的身体得着建立、激励和安慰。",
+      "简朴生活对我来说是一个很兴奋的挑战。",
+      "人家注意到我对结婚好像没有什么大兴趣。",
+      "当我听到一个代祷事项，我至少会用几日时间为这件事祷告。",
+      "我听过污鬼大声说话。",
+      "我没有什么才干，但教会的事务需要作我就作。",
+      "人家告诉我，说我传达的讯息全时又紧急，必定是直接从神而来。",
+      "在一群信徒当中，我不怕提供指导和方向。",
+      "我可以花许多时间来学习新的《圣经》真理，以致我能向别人传达。",
+      "当别人有困难，我往往可以带领他在《圣经》里找到最好的解决。",
+      "靠学习或经验，我发觉神有一些重要的策略和方法，来发展他的国度。",
+      "别人在他们痛苦及困难中会来找我之后告诉我说，他们得到了帮助、释放或医治。",
+      "我可以相当有把握地判断一个人是受邪灵搅扰。",
+      "当我受到感动，要奉献支持圣工，我通常能找到我需要的金钱。",
+      "我喜欢做刻板、固定的工作，而使到别人的事奉更有果效。",
+      "我喜欢去医院或老人院探访，而我觉得自己在这种事工上，做得蛮好。",
+      "其他种族或文化的人受我吸引，而我们双方来往得很融洽。",
+      "非基督徒觉得和我相处蛮自然，则我也积极影响他们开展对基督的信仰。",
+      "客人来我们家，他们会说好像宾至如归一样。",
+      "人家告诉我，说我有信心做成他们都认为不可能的事。",
+      "当我订目标时，别人好像很容易接纳。",
+      "我能够为一群人作有效率的计划，来达成大家的目标。",
+      "神好像经常用我的生命来成就不可能有的事。",
+      "人家告诉我，说因为我的服事，在感情困难上，神医治了他们。",
+      "我能用我从来没有学过的语言向神倾谈。",
+      "我祈求希望别人说方言时，我能作翻译。",
+      "我不是贫困，但我能和贫困的人认同。",
+      "由于我是单身，我很高兴我有更多时间事奉神。",
+      "花时间作代祷是我最喜欢的。",
+      "人家发觉有人可能受邪灵困扰，他们会来找我。",
+      "人家告诉我，说我喜欢作重复的事，并且做得特别好。",
+      "我有时强烈感受到，神对一个场合有重要的信息要传达。",
+      "我帮助别的信徒，带领他们在《圣经》里找到适切的经文，并且带他们一同祈祷。",
+      "我觉得我向别人解释《圣经》真理，不单能够带出知识增长，更能改变别人的态度、价值观和行为。",
+      "人家告诉我，说我对《圣经》真理有特别的领受，并且能够应用在众人的需要上。",
+      "我落不少功夫来研读，为的是学习新的《圣经》真理。",
+      "我有一个愿望，要有果效地辅导迷茫的、犯罪的和受毒品捆绑的人。",
+      "我能分辨出一个人的教导，是出自神，出自撒但，或出自人意。",
+      "我全然确信神会供应我一切需要，所以我持之以恒的大大奉献。",
+      "当我做幕后工作而别人得到帮助，我就心满意足。",
+      "别人看到不幸，会找我去帮手。",
+      "我愿意离开舒适的环境，如果我能够更有果效地向更多人分享基督。",
+      "别人不像我一样向未信主的人见证耶稣，我会觉得气恼。",
+      "人家告诉我，说我好客。",
+      "有时我很确实神有特别的旨意，来扩展他的事工——就算别人不能肯定。",
+      "当我加入一个团队，其他人自然退缩，并且期待我带领。",
+      "我不用太多说服，也能给人指示来完成一件工作。",
+      "人家告诉我，说我成了神的工具，带出生命及环境上超然的改变。",
+      "我为病人祷告，医治实实在在出现。",
+      "当我在公开场合说方言，我期待有翻译。",
+      "我翻译方言，别人得到祝福。",
+      "人家告诉我，说我牺牲太大来作事奉。",
+      "我单身，但我控制性的困扰不太难。",
+      "人家告诉我，说我为他们的祷告得到实实在在的应允。",
+      "我祷告，别人即时在污鬼邪灵捆扰中得释放。",
+      "我宁可积极采取行动，好过坐下来谈话、阅读、或听别人讲话。",
+      "我有时清楚确实知道神在事奉上要作的是什么。",
+      "人家告诉我，说我把他们重新带回基督大家庭。",
+      "研读《圣经》，把自己的见解与别人分享，是很满足的。",
+      "当要作重要的决定，我感受到神奇异的同在，并且得到信心。",
+      "我能够凭阅读和观察，自己发现新真理。",
+      "我说服别人在《圣经》中找良方，来解决他们的困难和痛苦。",
+      "我有分辨出一个人说方言，是真是假。",
+      "我甘愿过一个比较低水平的生活，以致造益神的工作。",
+      "当我服事神的时候，我根本不理谁得称赞。",
+      "我乐意和一个孤寂的，好像坐牢的人，共度时间。",
+      "比起别人，我有一个强烈的愿望，要别的地方的人归主。",
+      "我对非信徒特别好感，希望能赢取他们信主。",
+      "我愿意几时有需要，几时我的家就打开，来款待神的仆人。",
+      "人家告诉我，说我有特别的异象；这点我同意。",
+      "由我负责时，事情就进行的顺利。",
+      "我享受在教会中担任一个特别的责任，而且看到它成功。",
+      "奉主的名，我叫瞎眼的重见光明。",
+      "当我为病人祷告，一就是我自己，一就是对方，总会觉得热和震颤。",
+      "当我说方言，我相信是建立主的身体。",
+      "我翻译方言时，好像是神直接传达讯息给我们。",
+      "穷人家接纳我，因为我选择过他们的生活水平。",
+      "我没有困难认同保罗独身的心愿。",
+      "当我祷告时，神经常向我说话。我认识他的声音。",
+      "我奉主名赶鬼。",
+      "人家要我做的，看来是琐事，我也乐意接受。"
+    ];
+
+    const OPTIONS = [
+      { label: '许多', value: 3 },
+      { label: '有些', value: 2 },
+      { label: '少少', value: 1 },
+      { label: '没有', value: 0 }
+    ];
+
+    const STORAGE_KEY = 'spiritual_gifts_answers';
+    const REFLECTION_KEY = 'spiritual_gifts_reflections';
+
+    // Build questions array
+    const questions = QUESTION_TEXTS.map((text, index) => {
+      const id = index + 1;
+      const catIndex = (id - 1) % 25;
+      return { id, text, category: CATEGORIES[catIndex] };
+    });
+
+    // ===================== EXPORT HELPERS =====================
+    function htmlEscape(str) {
+      var div = document.createElement('div');
+      div.appendChild(document.createTextNode(str));
+      return div.innerHTML;
+    }
+
+    function getOptionLabel(value) {
+      var map = { 3: '许多', 2: '有些', 1: '少少', 0: '没有' };
+      return map[value] || '未答';
+    }
+
+    function buildStyleTag() {
+      return '@page { margin: 1.5cm; size: A4; } @media print { .print-btn { display: none !important; } body { font-size: 11pt; } } '
+        + '* { box-sizing: border-box; } '
+        + 'body { font-family: "Geist Sans", "Inter", -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; color: #1a1a1a; line-height: 1.7; padding: 20px; margin: 0; } '
+        + 'h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; } '
+        + 'h2 { font-size: 18px; font-weight: 600; margin: 24px 0 12px; border-bottom: 2px solid #5645d4; padding-bottom: 4px; color: #3a2a99; } '
+        + 'h3 { font-size: 15px; font-weight: 600; margin: 20px 0 8px; color: #4534b3; } '
+        + '.meta { color: #888; font-size: 12px; margin-bottom: 20px; } '
+        + '.print-btn { text-align: center; margin: 20px 0; } '
+        + '.print-btn button { padding: 10px 24px; background: #5645d4; color: #fff; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; } '
+        + 'table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 11pt; } '
+        + 'th { background: #f0edf9; padding: 8px 10px; text-align: left; font-weight: 600; color: #3a2a99; border: 1px solid #ddd; } '
+        + 'td { padding: 6px 10px; border: 1px solid #e0e0e0; } '
+        + 'tr:nth-child(even) { background: #fafafa; } '
+        + '.page-break { page-break-before: always; } '
+        + '.radar-img { max-width: 400px; display: block; margin: 16px auto; } '
+        + '.qa-item { margin: 4px 0; padding: 5px 8px; border-bottom: 1px solid #f0f0f0; font-size: 10.5pt; } '
+        + '.qa-item .q-text { color: #333; } '
+        + '.qa-item .a-text { color: #5645d4; font-weight: 600; } '
+        + '.answer-summary { color: #666; font-size: 12px; margin-bottom: 16px; } '
+        + '.reflection-item { margin: 12px 0; } '
+        + '.reflection-item .label { font-weight: 600; color: #3a2a99; margin-bottom: 4px; } '
+        + '.reflection-item .answer { background: #f9f9f9; padding: 10px 14px; border-radius: 6px; border-left: 3px solid #5645d4; white-space: pre-wrap; }';
+    }
+
+    function buildCategoryScoreTable(sortedData) {
+      var html = '<table><thead><tr><th>排名</th><th>类别</th><th>恩赐名称</th><th>得分</th><th>进度</th></tr></thead><tbody>';
+      sortedData.forEach(function(item, idx) {
+        var rank = idx + 1;
+        var rankStr = rank <= 3 ? ['🥇','🥈','🥉'][rank-1] : '#' + rank;
+        var dots = '';
+        for (var i = 0; i < 5; i++) {
+          dots += i < item.answered ? '●' : '○';
+        }
+        html += '<tr><td>' + rankStr + '</td><td>' + item.key + '</td><td>' + item.name + '</td><td><strong>' + item.score + '</strong>/15</td><td style="font-size:10px;letter-spacing:2px">' + dots + '</td></tr>';
+      });
+      html += '</tbody></table>';
+      return html;
+    }
+
+    function getRadarImageData() {
+      var canvas = document.getElementById('radarChart');
+      if (canvas) return canvas.toDataURL('image/png');
+      return null;
+    }
+
+    function openPrintWindow(title, innerHTML) {
+      var styleTag = buildStyleTag();
+      var fullHtml = '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>' + title + '</title><style>' + styleTag + '</style></head><body>'
+        + '<div class="print-btn"><button onclick="window.print()">🖨️ 打印 / 另存为 PDF</button></div>'
+        + innerHTML
+        + '</body></html>';
+      var win = window.open('', '_blank');
+      win.document.write(fullHtml);
+      win.document.close();
+      win.focus();
+      setTimeout(function() {
+        try { if (!win.closed) win.print(); } catch(e) {}
+      }, 1000);
+    }
+
+    // ===================== VUE APP =====================
+    const { createApp, ref, computed, watch, onMounted, nextTick } = Vue;
+
+    const app = createApp({
+      setup() {
+        const answers = ref({});
+        const isDark = ref(false);
+        const showRestoreDialog = ref(false);
+        const showJumpModal = ref(false);
+        const showScorePreview = ref(false);
+        const milestoneShown = ref({ 25: false, 50: false, 75: false, 100: false });
+        const showMilestone = ref(false);
+        const milestoneText = ref('');
+        const expandedDef = ref(null);
+        const animatedScores = ref({});
+        const scoreTargets = ref({});
+        const focusedQuestion = ref(null);
+        const reflection1 = ref('');
+        const reflection2 = ref('');
+        const reflection3 = ref('');
+        const reflection4 = ref('');
+        let radarChartInstance = null;
+
+        // Restore from localStorage
+        // Dark mode initialization：优先本工具键，回退工具箱共享键 toolbox-theme
+        const savedDark = localStorage.getItem('spiritual_gifts_dark');
+        if (savedDark !== null) {
+          isDark.value = savedDark === 'true';
+        } else {
+          const toolboxTheme = localStorage.getItem('toolbox-theme');
+          isDark.value = toolboxTheme ? toolboxTheme === 'dark'
+            : window.matchMedia('(prefers-color-scheme: dark)').matches;
+        }
+        if (isDark.value) {
+          document.documentElement.classList.add('dark');
+        }
+
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            if (Object.keys(parsed).length > 0) {
+              answers.value = parsed;
+              showRestoreDialog.value = true;
+            }
+          } catch (e) {}
+        }
+
+        const savedReflections = localStorage.getItem(REFLECTION_KEY);
+        if (savedReflections) {
+          try {
+            const r = JSON.parse(savedReflections);
+            reflection1.value = r.r1 || '';
+            reflection2.value = r.r2 || '';
+            reflection3.value = r.r3 || '';
+            reflection4.value = r.r4 || '';
+          } catch (e) {}
+        }
+
+        const savedCount = computed(() => Object.keys(answers.value).length);
+
+        const answeredCount = computed(() => Object.keys(answers.value).length);
+
+        const progressPercent = computed(() => (answeredCount.value / 125) * 100);
+
+        const allAnswered = computed(() => answeredCount.value === 125);
+
+        function restoreAnswers() {
+          showRestoreDialog.value = false;
+        }
+
+        function clearAndStart() {
+          answers.value = {};
+          reflection1.value = '';
+          reflection2.value = '';
+          reflection3.value = '';
+          reflection4.value = '';
+          localStorage.removeItem(STORAGE_KEY);
+          localStorage.removeItem(REFLECTION_KEY);
+          showRestoreDialog.value = false;
+        }
+
+        function setAnswer(id, value) {
+          answers.value = { ...answers.value, [id]: value };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(answers.value));
+          // 题号闪烃反馈
+          setTimeout(() => {
+            const el = document.getElementById('q' + id);
+            if (el) {
+              const badge = el.querySelector('.flex-shrink-0.w-8');
+              if (badge) {
+                badge.classList.remove('animate-scale-check');
+                // Force reflow
+                void badge.offsetWidth;
+                badge.classList.add('animate-scale-check');
+              }
+            }
+          }, 50);
+        }
+
+        function jumpTo(id) {
+          const el = document.getElementById('q' + id);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            focusedQuestion.value = id;
+            setTimeout(() => { focusedQuestion.value = null; }, 1500);
+          }
+        }
+
+        function toggleDef(key) {
+          expandedDef.value = expandedDef.value === key ? null : key;
+        }
+
+        function getAnsweredInCategory(catKey) {
+          let count = 0;
+          for (let i = 0; i < 5; i++) {
+            const qid = CATEGORIES.findIndex(c => c.key === catKey) + 1 + i * 25;
+            if (answers.value[qid] !== undefined) count++;
+          }
+          return count;
+        }
+
+        function getDotClass(id) {
+          if (answers.value[id] !== undefined) return 'bg-primary-500 text-white hover:bg-primary-600';
+          return 'bg-neutral-100 text-neutral-400 hover:bg-neutral-200';
+        }
+
+        function getCategoryScore(catKey) {
+          let score = 0;
+          for (let i = 0; i < 5; i++) {
+            const qid = CATEGORIES.findIndex(c => c.key === catKey) + 1 + i * 25;
+            if (answers.value[qid] !== undefined) {
+              score += answers.value[qid];
+            }
+          }
+          return score;
+        }
+
+        function getCategoryAnswered(catKey) {
+          let count = 0;
+          for (let i = 0; i < 5; i++) {
+            const qid = CATEGORIES.findIndex(c => c.key === catKey) + 1 + i * 25;
+            if (answers.value[qid] !== undefined) count++;
+          }
+          return count;
+        }
+
+        const sortedGifts = computed(() => {
+          return CATEGORIES.map(cat => ({
+            ...cat,
+            score: getCategoryScore(cat.key),
+            answered: getCategoryAnswered(cat.key)
+          }));
+        });
+
+        const topGifts = computed(() => {
+          return [...sortedGifts.value].sort((a, b) => b.score - a.score);
+        });
+
+        const liveScores = computed(() => {
+          return [...sortedGifts.value]
+            .sort((a, b) => b.score - a.score)
+            .map((item, index) => ({ ...item, rank: index + 1 }));
+        });
+
+        const giftDefinitionsWithScores = computed(() => {
+          return GIFT_DEFINITIONS.map(def => {
+            const scoreData = sortedGifts.value.find(s => s.key === def.key);
+            return { ...def, score: scoreData?.score || 0, answered: scoreData?.answered || 0 };
+          });
+        });
+
+        // Watch for all answered to render chart
+        watch(allAnswered, async (val) => {
+          if (val) {
+            await nextTick();
+            // Score animation
+            CATEGORIES.forEach(cat => {
+              scoreTargets.value[cat.key] = getCategoryScore(cat.key);
+              animatedScores.value[cat.key] = 0;
+            });
+            animatedScores.value = { ...animatedScores.value };
+            setTimeout(() => {
+              CATEGORIES.forEach(cat => {
+                animateScore(cat.key, scoreTargets.value[cat.key], 1000);
+              });
+            }, 400);
+            setTimeout(() => {
+              renderRadarChart();
+            }, 1200);
+          }
+        }, { immediate: true });
+
+        // Also watch individual answers to update chart when results are visible
+        watch(answers, async () => {
+          if (allAnswered.value) {
+            await nextTick();
+            renderRadarChart();
+          }
+        }, { deep: true });
+
+        // Watch reflections for save
+        // Watch for milestone achievements
+        watch(answeredCount, (val, old) => {
+          const milestones = [25, 50, 75, 100];
+          for (const m of milestones) {
+            if (val >= m && !milestoneShown.value[m] && old < m) {
+              milestoneShown.value[m] = true;
+              milestoneText.value = '🎉 已完成 ' + m + ' 题！';
+              showMilestone.value = true;
+              setTimeout(() => { showMilestone.value = false; }, 2500);
+              break;
+            }
+          }
+        });
+
+        // Watch dark mode
+        watch(isDark, (val) => {
+          if (val) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+          localStorage.setItem('spiritual_gifts_dark', val);
+          // 同步给工具箱其它工具，切主题后回首页颜色一致
+          try { localStorage.setItem('toolbox-theme', val ? 'dark' : 'light'); } catch (e) {}
+        });
+
+        function toggleDarkMode() {
+          isDark.value = !isDark.value;
+        }
+
+        watch([reflection1, reflection2, reflection3, reflection4], () => {
+          localStorage.setItem(REFLECTION_KEY, JSON.stringify({
+            r1: reflection1.value,
+            r2: reflection2.value,
+            r3: reflection3.value,
+            r4: reflection4.value
+          }));
+        });
+
+        
+        // Result score counter animation
+        function animateScore(key, target, duration) {
+          const start = performance.now();
+          function tick(now) {
+            const elapsed = now - start;
+            const progress = Math.min(elapsed / duration, 1);
+            // easeOutCubic
+            const eased = 1 - Math.pow(1 - progress, 3);
+            if (!animatedScores.value[key]) animatedScores.value[key] = 0;
+            animatedScores.value[key] = Math.round(eased * target);
+            // Trigger reactivity
+            animatedScores.value = { ...animatedScores.value };
+            if (progress < 1) {
+              requestAnimationFrame(tick);
+            }
+          }
+          requestAnimationFrame(tick);
+        }
+
+        function renderRadarChart() {
+          const canvas = document.getElementById('radarChart');
+          if (!canvas) return;
+
+          if (radarChartInstance) {
+            radarChartInstance.destroy();
+          }
+
+          const ctx = canvas.getContext('2d');
+
+          const labels = CATEGORIES.map(c => c.name);
+          const data = CATEGORIES.map(c => getCategoryScore(c.key));
+
+          radarChartInstance = new Chart(ctx, {
+            type: 'radar',
+            data: {
+              labels: labels,
+              datasets: [{
+                label: '恩赐得分',
+                data: data,
+                backgroundColor: 'rgba(86, 69, 212, 0.08)',
+                borderColor: 'rgba(86, 69, 212, 0.7)',
+                borderWidth: 2,
+                pointBackgroundColor: 'rgba(86, 69, 212, 0.9)',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 8,
+                pointHoverBackgroundColor: '#5645d4'
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: true,
+              plugins: {
+                legend: { display: false }
+              },
+              scales: {
+                r: {
+                  beginAtZero: true,
+                  max: 15,
+                  ticks: {
+                    stepSize: 3,
+                    font: { size: 10 },
+                    backdropColor: 'transparent'
+                  },
+                  grid: {
+                    color: 'rgba(148, 163, 184, 0.2)'
+                  },
+                  angleLines: {
+                    color: 'rgba(148, 163, 184, 0.2)'
+                  },
+                  pointLabels: {
+                    font: { size: 11, family: '-apple-system, sans-serif' },
+                    color: '#475569'
+                  }
+                }
+              }
+            }
+          });
+        }
+
+        function resetAll() {
+          if (confirm('确定要重置所有答案吗？此操作不可撤销。')) {
+            answers.value = {};
+            reflection1.value = '';
+            reflection2.value = '';
+            reflection3.value = '';
+            reflection4.value = '';
+            localStorage.removeItem(STORAGE_KEY);
+            localStorage.removeItem(REFLECTION_KEY);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        }
+
+        
+        // Card entrance animation observer
+        function setupCardObserver() {
+          setTimeout(() => {
+            const cards = document.querySelectorAll('[id^="q"] > div');
+            cards.forEach((el, i) => {
+              el.classList.add('card-enter');
+              el.style.transitionDelay = (i * 30) + 'ms';
+            });
+            const observer = new IntersectionObserver((entries) => {
+              entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                  entry.target.classList.remove('card-enter');
+                  entry.target.classList.add('card-enter-done');
+                  observer.unobserve(entry.target);
+                }
+              });
+            }, { threshold: 0.05, rootMargin: '0px 0px -30px 0px' });
+            cards.forEach(el => observer.observe(el));
+          }, 100);
+        }
+        
+        // Call observer after mount
+        setTimeout(setupCardObserver, 200);
+
+        // ===== EXPORT FUNCTIONS =====
+        function exportFullReport() {
+          const ansCount = answeredCount.value;
+          const answersData = answers.value;
+          const sorted = [...sortedGifts.value].sort((a, b) => b.score - a.score);
+
+          // Q&A section
+          let qaHtml = '';
+          let count = 0;
+          questions.forEach(q => {
+            if (answersData[q.id] !== undefined) {
+              qaHtml += '<div class="qa-item"><span class="q-text"><strong>' + q.id + '.</strong> ' + q.text + '</span><span class="a-text"> → ' + getOptionLabel(answersData[q.id]) + '</span></div>';
+              count++;
+            }
+          });
+          if (!qaHtml) qaHtml = '<p style="color:#999">暂无作答记录</p>';
+
+          // Scores table
+          const scoresHtml = buildCategoryScoreTable(sorted);
+
+          // Top 3
+          const top3Html = sorted.slice(0, 3).map(function(item, idx) {
+            return '<span style="font-weight:600">' + ['🥇','🥈','🥉'][idx] + ' ' + item.name + '（' + item.score + '分）</span>';
+          }).join(' &nbsp; ');
+
+          // Reflections
+          var reflections = [
+            { label: '在基督身体内，你目前担任（正式及非正式）什么事奉？', val: reflection1.value },
+            { label: '哪项事奉非你恩赐所长？神可能呼召你考虑变换。', val: reflection2.value },
+            { label: '在职业方面，你是专职事奉者，还是带职事奉信徒？', val: reflection3.value },
+            { label: '考虑了你的恩赐组合和职业，你觉得最合宜的事奉模式是什么？按神给你特殊的恩赐，在基督身体内，最合宜的角色是什么？', val: reflection4.value }
+          ];
+          var refHtml = '';
+          reflections.forEach(function(r) {
+            if (r.val.trim()) {
+              refHtml += '<div class="reflection-item"><div class="label">' + r.label + '</div><div class="answer">' + htmlEscape(r.val) + '</div></div>';
+            }
+          });
+          if (!refHtml) refHtml = '<p style="color:#999">（未填写反思内容）</p>';
+
+          // Radar image
+          var radarData = getRadarImageData();
+          var radarImg = radarData ? '<div class="page-break"></div><h2>🕸️ 恩赐雷达图</h2><img src="' + radarData + '" class="radar-img" alt="雷达图">' : '';
+
+          var timestamp = new Date().toLocaleString('zh-CN');
+          var bodyHtml = '<h1>📋 属灵恩赐测试报告</h1><div class="meta">生成时间：' + timestamp + ' | 完成进度：' + ansCount + '/125</div>'
+            + '<h2>📝 作答记录</h2><div class="answer-summary">共 ' + count + ' 道题已作答</div>' + qaHtml
+            + '<div class="page-break"></div><h2>📊 得分结果</h2>'
+            + '<div style="margin:12px 0;padding:12px;background:#f8f6ff;border-radius:8px;border:1px solid #5645d4;"><strong>🏆 主要恩赐：</strong> ' + top3Html + '</div>'
+            + scoresHtml + radarImg
+            + '<div class="page-break"></div><h2>💭 恩赐与事奉反思</h2>' + refHtml;
+
+          openPrintWindow('属灵恩赐测试报告', bodyHtml);
+        }
+
+        function exportScores() {
+          var sorted = [...sortedGifts.value].sort((a, b) => b.score - a.score);
+          var scoresHtml = buildCategoryScoreTable(sorted);
+
+          var top3Html = sorted.slice(0, 3).map(function(item, idx) {
+            return '<span style="font-weight:600">' + ['🥇','🥈','🥉'][idx] + ' ' + item.name + '（' + item.score + '分）</span>';
+          }).join(' &nbsp; ');
+
+          var secondaryHtml = sorted.slice(3, 6).map(function(item) {
+            return item.name + '（' + item.score + '分）';
+          }).join('、');
+
+          var radarData = getRadarImageData();
+          var radarImg = radarData ? '<h2>🕸️ 恩赐雷达图</h2><img src="' + radarData + '" class="radar-img" alt="雷达图">' : '';
+
+          var timestamp = new Date().toLocaleString('zh-CN');
+          var bodyHtml = '<h1>📊 属灵恩赐测试 — 得分结果</h1><div class="meta">生成时间：' + timestamp + '</div>'
+            + '<div style="margin:12px 0;padding:16px;background:#f8f6ff;border-radius:8px;border:1px solid #5645d4;">'
+            + '<h3 style="margin:0 0 8px;color:#3a2a99">🏆 主要恩赐</h3>'
+            + '<div style="font-size:16px;">' + top3Html + '</div>'
+            + (secondaryHtml ? '<div style="margin-top:8px;font-size:13px;color:#666">🎗️ 次要恩赐：' + secondaryHtml + '</div>' : '')
+            + '</div>'
+            + '<h2>全部恩赐得分一览</h2>' + scoresHtml + radarImg;
+
+          openPrintWindow('属灵恩赐测试 - 得分结果', bodyHtml);
+        }
+
+        function exportAnswers() {
+          var answersData = answers.value;
+          var qaHtml = '';
+          var count = 0;
+          questions.forEach(function(q) {
+            var val = answersData[q.id];
+            var status = val !== undefined ? getOptionLabel(val) : '（未答）';
+            var colorStyle = val !== undefined ? '' : ' style="color:#ccc"';
+            qaHtml += '<div class="qa-item"' + colorStyle + '><span class="q-text"><strong>' + q.id + '.</strong> [' + q.category.key + '] ' + q.text + '</span><span class="a-text"> → ' + status + '</span></div>';
+            if (val !== undefined) count++;
+          });
+
+          var timestamp = new Date().toLocaleString('zh-CN');
+          var bodyHtml = '<h1>📝 属灵恩赐测试 — 作答记录</h1><div class="meta">生成时间：' + timestamp + ' | 已答：' + count + '/125 题</div>' + qaHtml;
+
+          openPrintWindow('属灵恩赐测试 - 作答记录', bodyHtml);
+        }
+
+        function exportReflections() {
+          var reflections = [
+            { label: '在基督身体内，你目前担任（正式及非正式）什么事奉？', val: reflection1.value },
+            { label: '哪项事奉非你恩赐所长？神可能呼召你考虑变换。', val: reflection2.value },
+            { label: '在职业方面，你是专职事奉者，还是带职事奉信徒？', val: reflection3.value },
+            { label: '考虑了你的恩赐组合和职业，你觉得最合宜的事奉模式是什么？按神给你特殊的恩赐，在基督身体内，最合宜的角色是什么？', val: reflection4.value }
+          ];
+
+          var sorted = [...sortedGifts.value].sort((a, b) => b.score - a.score);
+          var giftsContext = sorted.slice(0, 6).map(function(item, idx) {
+            return ['🥇','🥈','🥉','4.','5.','6.'][idx] + ' ' + item.name + '（' + item.score + '分）';
+          }).join('<br>');
+
+          var refHtml = '';
+          reflections.forEach(function(r) {
+            refHtml += '<div class="reflection-item"><div class="label">' + r.label + '</div><div class="answer">' + htmlEscape(r.val.trim() || '（未填写）') + '</div></div>';
+          });
+
+          var timestamp = new Date().toLocaleString('zh-CN');
+          var bodyHtml = '<h1>💭 属灵恩赐测试 — 事奉反思</h1><div class="meta">生成时间：' + timestamp + '</div>'
+            + '<div style="margin:12px 0;padding:12px;background:#f8f6ff;border-radius:8px;border:1px solid #e0d8f5;font-size:13px"><strong>📊 你的恩赐得分排名：</strong><br>' + giftsContext + '</div>'
+            + '<h2>反思记录</h2>' + refHtml;
+
+          openPrintWindow('属灵恩赐测试 - 事奉反思', bodyHtml);
+        }
+
+        return {
+          questions,
+          options: OPTIONS,
+          answers,
+          showRestoreDialog,
+          showJumpModal,
+          showScorePreview,
+          showMilestone,
+          milestoneText,
+          focusedQuestion,
+          reflection1, reflection2, reflection3, reflection4,
+          savedCount,
+          answeredCount,
+          progressPercent,
+          allAnswered,
+          sortedGifts,
+          topGifts,
+          liveScores,
+          getAnsweredInCategory,
+          animatedScores,
+          getCategoryColor,
+          expandedDef,
+          giftDefinitionsWithScores,
+          toggleDef,
+          restoreAnswers,
+          clearAndStart,
+          setAnswer,
+          jumpTo,
+          getDotClass,
+          resetAll,
+          toggleDarkMode,
+          isDark,
+          exportFullReport,
+          exportScores,
+          exportAnswers,
+          exportReflections
+        };
+      }
+    });
+
+    app.mount('#app');
+  </script>
+
+</body>
+</html>
