@@ -21,15 +21,18 @@
       theme: {
         extend: {
           colors: {
+            /* 暖棕/琥珀色阶，锚定工具箱共享主题 --accent #c27a3a 与 --accent-strong #a86428。
+               500/600/700 都保证白字对比度 ≥4.5，用于 Hero 与实心按钮。 */
             primary: {
-              50: "#efe9fb", 100: "#d6cff5", 200: "#b3a8ed", 300: "#8c7de4",
-              400: "#6b5cdb", 500: "#5645d4", 600: "#4534b3", 700: "#3a2a99",
-              800: "#2a1f7a", 900: "#1a1458"
+              50: "#fdf4e9", 100: "#f9e7d2", 200: "#f0cca4", 300: "#e0a86e",
+              400: "#c9823f", 500: "#a86428", 600: "#8a4f1d", 700: "#6d3d15",
+              800: "#4f2c10", 900: "#331c0a"
             },
+            /* 暖褐灰，对应 shared/theme.css 的 --text-* / --line：不再用冷调中性灰 */
             neutral: {
-              50: "#fafaf9", 100: "#f6f5f4", 200: "#ede9e4", 300: "#e5e3df",
-              400: "#c8c4be", 500: "#a4a097", 600: "#787671", 700: "#5d5b54",
-              800: "#37352f", 900: "#1a1a1a"
+              50: "#fdfaf6", 100: "#f6ecdf", 200: "#e4ccb0", 300: "#d3b592",
+              400: "#9a7f67", 500: "#7d6350", 600: "#715740", 700: "#5a4230",
+              800: "#3d2c1f", 900: "#241a12"
             },
           },
           animation: {
@@ -49,8 +52,8 @@
               "66%": { transform: "translateY(-8px) rotate(-0.5deg)" }
             },
             pulseGlow: {
-              "0%, 100%": { boxShadow: "0 0 20px rgba(86, 69, 212, 0.3)" },
-              "50%": { boxShadow: "0 0 40px rgba(86, 69, 212, 0.6)" }
+              "0%, 100%": { boxShadow: "0 0 20px rgba(168, 100, 40, 0.3)" },
+              "50%": { boxShadow: "0 0 40px rgba(168, 100, 40, 0.45)" }
             },
             bounceIn: {
               "0%": { opacity: "0", transform: "scale(0.8)" },
@@ -83,11 +86,11 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
-    body { font-family: 'Geist Sans', 'Inter', -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f6f5f4; color: #37352f; }
+    body { font-family: 'Geist Sans', 'Inter', -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f6ecdf; color: #3d2c1f; }
 
     .option-btn { transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1); cursor: pointer; user-select: none; position: relative; }
-    .option-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(86, 69, 212, 0.2); }
-    .option-btn.selected { transform: translateY(-2px) scale(1.02); box-shadow: 0 6px 20px rgba(86, 69, 212, 0.3); }
+    .option-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(168, 100, 40, 0.22); }
+    .option-btn.selected { transform: translateY(-2px) scale(1.02); box-shadow: 0 6px 20px rgba(168, 100, 40, 0.3); }
     .option-btn:active:not(.selected) { transform: scale(0.96); }
 
     .q-nav-dot { width: 20px; height: 20px; border-radius: 4px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; }
@@ -106,12 +109,12 @@
 
 
 
-    .modal-overlay { background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px); }
+    .modal-overlay { background: rgba(61, 44, 31, 0.5); backdrop-filter: blur(4px); }
 
     .result-card { transition: all 0.3s ease; }
-    .result-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(86, 69, 212, 0.15); }
+    .result-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(168, 100, 40, 0.16); }
 
-    .category-label { font-size: 11px; fill: #64748b; }
+    .category-label { font-size: 11px; fill: #5a4230; }
 
     .chart-wrapper { position: relative; width: 100%; max-width: 500px; margin: 0 auto; }
   
@@ -128,7 +131,7 @@
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 .text-gradient {
-  background: linear-gradient(135deg, #5645d4, #8c7de4);
+  background: linear-gradient(135deg, #a86428, #c9823f);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -153,7 +156,7 @@
 }
 .result-card-glow:hover {
   transform: translateY(-6px);
-  box-shadow: 0 16px 48px rgba(86, 69, 212, 0.2);
+  box-shadow: 0 16px 48px rgba(168, 100, 40, 0.22);
 }
 
 .def-content {
@@ -172,7 +175,7 @@
 ::-webkit-scrollbar-thumb { background: #c8c4be; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #a4a097; }
 
-::selection { background: rgba(86, 69, 212, 0.2); color: #2a1f7a; }
+::selection { background: rgba(168, 100, 40, 0.22); color: #4f2c10; }
 
 /* ===== PRINT STYLES ===== */
 @media print {
@@ -187,89 +190,97 @@
 }
 
 /* ===== DARK MODE OVERRIDES ===== */
-.dark body { background: #0b0b14 !important; color: #e8e4f0 !important; }
-.dark .bg-white { background-color: #14142a !important; }
-.dark .bg-white\/80 { background-color: rgba(20,20,42,0.8) !important; }
-.dark .bg-primary-50 { background-color: #1a1640 !important; }
-.dark .bg-primary-100 { background-color: #241e50 !important; }
-.dark .bg-primary-50\/50 { background-color: rgba(26,22,64,0.5) !important; }
-.dark .bg-neutral-100 { background-color: #1e1e38 !important; }
-.dark .bg-neutral-50 { background-color: #16162e !important; }
-.dark .bg-neutral-50\/80 { background-color: rgba(22,22,46,0.8) !important; }
-.dark .from-white { --tw-gradient-from: #14142a !important; }
-.dark .to-primary-50\/50 { --tw-gradient-to: rgba(26,22,64,0.5) !important; }
-.dark .to-primary-100\/50 { --tw-gradient-to: rgba(36,30,80,0.5) !important; }
-.dark .from-primary-50 { --tw-gradient-from: #1a1640 !important; }
-.dark .from-primary-100\/50 { --tw-gradient-from: rgba(36,30,80,0.5) !important; }
-.dark \[class*="from-primary-"] { --tw-gradient-from: #1a1640 !important; }
-.dark .text-neutral-700 { color: #d1cce0 !important; }
-.dark .text-neutral-600 { color: #c0bcd0 !important; }
-.dark .text-neutral-500 { color: #a8a4bc !important; }
-.dark .text-neutral-400 { color: #8a86a0 !important; }
-.dark .text-neutral-300 { color: #6b6880 !important; }
-.dark .text-primary-700 { color: #b3a8ed !important; }
-.dark .text-primary-800 { color: #ccc4f5 !important; }
-.dark .text-primary-600 { color: #8c7de4 !important; }
-.dark .text-primary-500 { color: #6b5cdb !important; }
-.dark .text-primary-400 { color: #5645d4 !important; }
-.dark .text-primary-100 { color: #d6cff5 !important; }
-.dark .text-primary-200 { color: #b3a8ed !important; }
-.dark .border-neutral-100 { border-color: #2a2a4a !important; }
-.dark .border-neutral-200 { border-color: #35355a !important; }
-.dark .border-primary-100 { border-color: #3a2a6a !important; }
-.dark .border-primary-200 { border-color: #4a3a8a !important; }
-.dark .shadow-sm { box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important; }
-.dark .shadow-md { box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important; }
-.dark .shadow-lg { box-shadow: 0 10px 40px rgba(0,0,0,0.5) !important; }
-.dark .shadow-2xl { box-shadow: 0 25px 60px rgba(0,0,0,0.6) !important; }
-.dark .shadow-primary-200 { box-shadow: 0 4px 14px rgba(86,69,212,0.15) !important; }
-.dark .ring-primary-300 { --tw-ring-color: rgba(140,125,228,0.4) !important; }
-.dark .border-b { border-bottom-color: #2a2a4a !important; }
-.dark .border-t { border-top-color: #2a2a4a !important; }
-.dark .ring-2 { --tw-ring-color: rgba(140,125,228,0.5) !important; }
-.dark .bg-primary-500 { background-color: #5645d4 !important; }
-.dark .bg-primary-400 { background-color: #6b5cdb !important; }
-.dark .bg-primary-400\/20 { background-color: rgba(107,92,219,0.2) !important; }
-.dark .bg-primary-300\/15 { background-color: rgba(140,125,228,0.15) !important; }
-.dark .bg-primary-200\/10 { background-color: rgba(179,168,237,0.1) !important; }
-.dark .from-primary-400 { --tw-gradient-from: #6b5cdb !important; }
-.dark .via-primary-500 { --tw-gradient-via: #5645d4 !important; }
-.dark .to-primary-700 { --tw-gradient-to: #3a2a99 !important; }
-.dark .from-primary-300 { --tw-gradient-from: #8c7de4 !important; }
-.dark .to-primary-400 { --tw-gradient-to: #6b5cdb !important; }
-.dark .to-primary-500 { --tw-gradient-to: #5645d4 !important; }
-.dark .from-amber-50 { --tw-gradient-from: #2a2010 !important; }
-.dark .to-amber-100\/50 { --tw-gradient-to: rgba(42,32,16,0.5) !important; }
+/* 暖黑底色（不再用蓝紫 #0b0b14 / #14142a），与工具箱夜间 --bg-main #1f1b17 同族 */
+.dark body { background: #14100c !important; color: #f3e0cb !important; }
+.dark .bg-white { background-color: #2a2019 !important; }
+.dark .bg-white\/80 { background-color: rgba(42,32,25,0.8) !important; }
+.dark .bg-primary-50 { background-color: #2e2116 !important; }
+.dark .bg-primary-100 { background-color: #3a2a1a !important; }
+.dark .bg-primary-50\/50 { background-color: rgba(46,33,22,0.5) !important; }
+.dark .bg-neutral-100 { background-color: #2b2118 !important; }
+.dark .bg-neutral-50 { background-color: #1e1710 !important; }
+.dark .bg-neutral-50\/80 { background-color: rgba(30,23,16,0.8) !important; }
+.dark .from-white { --tw-gradient-from: #241c15 !important; }
+.dark .to-primary-50\/50 { --tw-gradient-to: rgba(46,33,22,0.5) !important; }
+.dark .to-primary-100\/50 { --tw-gradient-to: rgba(58,42,26,0.5) !important; }
+.dark .from-primary-50 { --tw-gradient-from: #2e2116 !important; }
+.dark .from-primary-100\/50 { --tw-gradient-from: rgba(58,42,26,0.5) !important; }
+.dark \[class*="from-primary-"] { --tw-gradient-from: #2e2116 !important; }
+.dark .text-neutral-700 { color: #dcb98e !important; }
+.dark .text-neutral-600 { color: #c8a276 !important; }
+/* 500 与 400 分开：原两档同色会把「标签/分值」的主次抹平。
+   400 用在 /15 后缀、说明文字等小字上，必须对卡片 #2a2019 ≥4.5，
+   之前设成 #8a6d52 只有 3.33:1，小字读起来发暗像禁用。 */
+.dark .text-neutral-500 { color: #b08f6e !important; }
+.dark .text-neutral-400 { color: #b8987a !important; }
+.dark .text-neutral-300 { color: #8a6d52 !important; }
+.dark .text-primary-700 { color: #dcb98e !important; }
+.dark .text-primary-800 { color: #eed6b7 !important; }
+.dark .text-primary-600 { color: #c8a276 !important; }
+.dark .text-primary-500 { color: #c9823f !important; }
+.dark .text-primary-400 { color: #a86428 !important; }
+.dark .text-primary-100 { color: #f9e7d2 !important; }
+.dark .text-primary-200 { color: #e3c8a6 !important; }
+.dark .border-neutral-100 { border-color: #3d2f22 !important; }
+.dark .border-neutral-200 { border-color: #4a3826 !important; }
+.dark .border-primary-100 { border-color: #4a3826 !important; }
+.dark .border-primary-200 { border-color: #6d4f2e !important; }
+.dark .shadow-sm { box-shadow: 0 1px 3px rgba(0,0,0,0.35) !important; }
+.dark .shadow-md { box-shadow: 0 4px 20px rgba(0,0,0,0.45) !important; }
+.dark .shadow-lg { box-shadow: 0 10px 40px rgba(0,0,0,0.55) !important; }
+.dark .shadow-2xl { box-shadow: 0 25px 60px rgba(0,0,0,0.65) !important; }
+.dark .shadow-primary-200 { box-shadow: 0 4px 14px rgba(201,130,63,0.18) !important; }
+.dark .ring-primary-300 { --tw-ring-color: rgba(201,130,63,0.4) !important; }
+.dark .border-b { border-bottom-color: #3d2f22 !important; }
+.dark .border-t { border-top-color: #3d2f22 !important; }
+.dark .ring-2 { --tw-ring-color: rgba(201,130,63,0.5) !important; }
+.dark .bg-primary-500 { background-color: #a86428 !important; }
+.dark .bg-primary-400 { background-color: #c9823f !important; }
+.dark .bg-primary-400\/20 { background-color: rgba(201,130,63,0.2) !important; }
+.dark .bg-primary-300\/15 { background-color: rgba(224,168,110,0.15) !important; }
+.dark .bg-primary-200\/10 { background-color: rgba(240,204,164,0.1) !important; }
+.dark .from-primary-400 { --tw-gradient-from: #c9823f !important; }
+.dark .via-primary-500 { --tw-gradient-via: #a86428 !important; }
+.dark .to-primary-700 { --tw-gradient-to: #6d3d15 !important; }
+.dark .from-primary-300 { --tw-gradient-from: #e0a86e !important; }
+.dark .to-primary-400 { --tw-gradient-to: #c9823f !important; }
+.dark .to-primary-500 { --tw-gradient-to: #a86428 !important; }
+/* 导出按钮四色系：紫→暖棕，绿/黄/玫红保留语义但压成暖底 */
+.dark .from-amber-50 { --tw-gradient-from: #2e2410 !important; }
+.dark .to-amber-100\/50 { --tw-gradient-to: rgba(46,36,16,0.5) !important; }
 .dark .text-amber-700 { color: #d4a84b !important; }
 .dark .text-amber-400 { color: #f0c050 !important; }
 .dark .text-amber-500 { color: #e0b040 !important; }
 .dark .border-amber-200 { border-color: #4a3a1a !important; }
-.dark .from-emerald-50 { --tw-gradient-from: #102a20 !important; }
-.dark .to-emerald-100\/50 { --tw-gradient-to: rgba(16,42,32,0.5) !important; }
-.dark .text-emerald-700 { color: #50c090 !important; }
-.dark .text-emerald-400 { color: #60d0a0 !important; }
-.dark .border-emerald-200 { border-color: #1a4a3a !important; }
-.dark .from-rose-50 { --tw-gradient-from: #2a1020 !important; }
-.dark .to-rose-100\/50 { --tw-gradient-to: rgba(42,16,32,0.5) !important; }
-.dark .text-rose-700 { color: #d06080 !important; }
-.dark .text-rose-400 { color: #e08090 !important; }
-.dark .border-rose-200 { border-color: #4a2a3a !important; }
-.dark .from-primary-200 { --tw-gradient-from: #4a3a7a !important; }
-.dark .to-primary-300 { --tw-gradient-to: #6a5a9a !important; }
-.dark .from-primary-200 { --tw-gradient-from: #4a3a7a !important; }
-.dark .glass { background: rgba(255,255,255,0.06) !important; border-color: rgba(255,255,255,0.08) !important; }
-.dark .glass-card { background: rgba(20,20,42,0.6) !important; border-color: rgba(255,255,255,0.08) !important; }
-.dark .modal-overlay { background: rgba(0,0,0,0.7) !important; }
-.dark .option-btn { background-color: #14142a !important; border-color: #2a2a4a !important; color: #a8a4bc !important; }
-.dark .option-btn.selected { background-color: #1a1640 !important; border-color: #5645d4 !important; color: #b3a8ed !important; }
-.dark .option-btn:hover:not(.selected) { border-color: #4a3a7a !important; background-color: rgba(26,22,64,0.5) !important; }
-.dark .selected .text-neutral-300 { color: #6b5cdb !important; }
-.dark .q-nav-dot\:not(\.bg-primary-500) { background-color: #1e1e38 !important; color: #6b6880 !important; }
-.dark .q-nav-dot:hover { background-color: #2a2a4a !important; }
-.dark .bg-gradient-to-br\.from-primary-400\.via-primary-500\.to-primary-700 { background: linear-gradient(135deg, #3a2a7a, #2a1f5a, #1a1440) !important; }
-.dark .sticky { background-color: rgba(20,20,42,0.95) !important; }
-.dark .def-content .bg-primary-50\/50 { background-color: rgba(26,22,64,0.5) !important; }
-.dark \[class*="result-card"] { background-color: #14142a !important; border-color: #2a2a4a !important; }
+/* 导出按钮另两档：emerald/rose 已换成 orange/yellow，同步给夜间值，别留死规则 */
+.dark .from-orange-50 { --tw-gradient-from: #2e1c0e !important; }
+.dark .to-orange-100\/50 { --tw-gradient-to: rgba(46,28,14,0.5) !important; }
+.dark .text-orange-700 { color: #e08a50 !important; }
+.dark .border-orange-200 { border-color: #4a2c16 !important; }
+.dark .from-yellow-50 { --tw-gradient-from: #2a2410 !important; }
+.dark .to-yellow-100\/50 { --tw-gradient-to: rgba(42,36,16,0.5) !important; }
+.dark .text-yellow-700 { color: #d4b04b !important; }
+.dark .border-yellow-200 { border-color: #453c18 !important; }
+.dark .from-primary-200 { --tw-gradient-from: #6d4f2e !important; }
+.dark .to-primary-300 { --tw-gradient-to: #8a6a45 !important; }
+.dark .glass { background: rgba(255,244,229,0.07) !important; border-color: rgba(255,244,229,0.09) !important; }
+.dark .glass-card { background: rgba(36,28,21,0.6) !important; border-color: rgba(255,244,229,0.08) !important; }
+.dark .modal-overlay { background: rgba(10,7,4,0.7) !important; }
+/* 夜间未选中选项：填充比卡片更暗（内凹感），边框提到 #8a6a45（对填充 3.57:1），
+   否则 #241c15 与卡片同色、边框 1.18:1，四个按钮看不出是可点控件。 */
+.dark .option-btn { background-color: #1e1710 !important; border-color: #8a6a45 !important; color: #b08f6e !important; }
+.dark .option-btn.selected { background-color: #2e2116 !important; border-color: #c9823f !important; color: #e3c8a6 !important; }
+.dark .option-btn:hover:not(.selected) { border-color: #6d4f2e !important; background-color: rgba(46,33,22,0.6) !important; }
+.dark .selected .text-neutral-300 { color: #c9823f !important; }
+.dark .q-nav-dot\:not(\.bg-primary-500) { background-color: #2b2118 !important; color: #8a6d52 !important; }
+.dark .q-nav-dot:hover { background-color: #3d2f22 !important; }
+/* Hero 夜间渐变：原写法把 .from-x.via-y.to-z 转义成一个类名，永远匹配不到（死规则）。
+   直接按元素选，section.bg-gradient-to-br 在本页只有 Hero 一处。夜间比浅色再暗，
+   但留出与页面底 #14100c 的差别，避免 Hero 糊成一片。 */
+.dark section.bg-gradient-to-br { background: linear-gradient(135deg, #4a2a12, #3a2009, #2a1708) !important; }
+.dark .sticky { background-color: rgba(36,28,21,0.95) !important; }
+.dark .def-content .bg-primary-50\/50 { background-color: rgba(46,33,22,0.5) !important; }
+.dark \[class*="result-card"] { background-color: #241c15 !important; border-color: #3d2f22 !important; }
 
 /* ===== EXPORT BUTTONS ===== */
 .export-btn {
@@ -279,7 +290,7 @@
 }
 .export-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(86, 69, 212, 0.25);
+  box-shadow: 0 6px 20px rgba(168, 100, 40, 0.26);
 }
 .export-btn:active {
   transform: translateY(0);
@@ -301,14 +312,14 @@
   padding: 6px 12px;
   border-radius: 999px;
   font-size: 0.85rem;
-  color: #5645d4;
+  color: #a86428;
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(86, 69, 212, 0.2);
+  border: 1px solid rgba(168, 100, 40, 0.22);
   text-decoration: none;
 }
 .back-link:hover { background: #fff; }
-.dark .back-link { color: #b3a8ed; background: rgba(20, 20, 42, 0.8); border-color: rgba(140, 125, 228, 0.35); }
+.dark .back-link { color: #dcb98e; background: rgba(36, 28, 21, 0.85); border-color: rgba(201, 130, 63, 0.35); }
 </style>
 </head>
 <body>
@@ -375,7 +386,7 @@
               <div class="w-6 text-center flex-shrink-0">
                 <span v-if="item.rank <= 3" class="text-sm">{{ ['🥇','🥈','🥉'][item.rank-1] }}</span>
                 <span v-else-if="item.rank <= 6" class="text-xs font-bold text-amber-500">#{{ item.rank }}</span>
-                <span v-else class="text-xs text-neutral-300">{{ item.rank }}</span>
+                <span v-else class="text-xs text-neutral-500">{{ item.rank }}</span>
               </div>
               <!-- category name -->
               <div class="w-16 text-sm font-medium text-neutral-600 flex-shrink-0">{{ item.key }}.{{ item.name }}</div>
@@ -392,8 +403,8 @@
               </div>
               <!-- score number -->
               <div class="w-10 text-right text-sm font-bold flex-shrink-0"
-                :class="item.answered === 5 ? 'text-primary-600' : 'text-neutral-300'">
-                {{ item.score }}<span class="text-xs text-neutral-300">/15</span>
+                :class="item.answered === 5 ? 'text-primary-600' : 'text-neutral-500'">
+                {{ item.score }}<span class="text-xs text-neutral-500">/15</span>
               </div>
             </div>
             <!-- empty state -->
@@ -405,7 +416,7 @@
           </div>
           <!-- footer -->
           <div class="p-4 border-t border-neutral-100 text-center text-xs text-neutral-400">
-            已完成的类别显示为 <span class="inline-block w-2.5 h-2.5 rounded-full bg-primary-400 align-middle"></span> 蓝色圆点
+            已完成的类别显示为 <span class="inline-block w-2.5 h-2.5 rounded-full bg-primary-400 align-middle"></span> 琥珀色圆点
           </div>
         </div>
       </div>
@@ -425,7 +436,9 @@
       <main class="flex-1">
 
         <!-- ===== HERO ===== -->
-        <section class="relative overflow-hidden bg-gradient-to-br from-primary-400 via-primary-500 to-primary-700 text-white px-6 py-16 md:py-24">
+        <!-- Hero 渐变收轻一档（原 primary-600→800 对页面底 8.54:1，比首页任何色块都重）。
+             取 500→600→700，最浅端 primary-500 仍保证白字 4.65、#fffbf5 4.51。 -->
+        <section class="relative overflow-hidden bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 text-white px-6 py-16 md:py-24">
           <div class="absolute inset-0 overflow-hidden">
             <div class="absolute -top-40 -left-40 w-80 h-80 bg-primary-400/20 rounded-full blur-3xl animate-float"></div>
             <div class="absolute -bottom-20 -right-20 w-60 h-60 bg-primary-300/15 rounded-full blur-3xl animate-float-slow" style="animation-delay: -3s;"></div>
@@ -436,16 +449,16 @@
           </div>
           <div class="relative max-w-3xl mx-auto text-center">
             <div class="text-5xl mb-6">✨</div>
-            <h1 class="text-3xl md:text-5xl font-bold mb-4 tracking-tight [text-shadow:0_0_40px_rgba(86,69,212,0.3)]">你的属灵恩赐测试表</h1>
+            <h1 class="text-3xl md:text-5xl font-bold mb-4 tracking-tight [text-shadow:0_0_40px_rgba(168,100,40,0.3)]">你的属灵恩赐测试表</h1>
             <p class="text-lg md:text-xl text-primary-100 max-w-2xl mx-auto leading-relaxed">
               完成125道题目，发现神赐给你的属灵恩赐。每道题根据你的真实经历，
               选择「许多」「有些」「少少」「没有」之一。
             </p>
             <div class="mt-8 flex flex-wrap gap-3 justify-center text-sm text-primary-100">
-              <span class="px-3 py-1 glass rounded-full backdrop-blur-md text-primary-200">📝 125 道题</span>
-              <span class="px-3 py-1 glass rounded-full backdrop-blur-md text-primary-200">🎯 25 类恩赐</span>
-              <span class="px-3 py-1 glass rounded-full backdrop-blur-md text-primary-200">⏱ 约 15-20 分钟</span>
-              <span class="px-3 py-1 glass rounded-full backdrop-blur-md text-primary-200">💾 自动保存进度</span>
+              <span class="px-3 py-1 glass rounded-full backdrop-blur-md text-primary-100">📝 125 道题</span>
+              <span class="px-3 py-1 glass rounded-full backdrop-blur-md text-primary-100">🎯 25 类恩赐</span>
+              <span class="px-3 py-1 glass rounded-full backdrop-blur-md text-primary-100">⏱ 约 15-20 分钟</span>
+              <span class="px-3 py-1 glass rounded-full backdrop-blur-md text-primary-100">💾 自动保存进度</span>
             </div>
           </div>
         </section>
@@ -510,13 +523,17 @@
                         class="option-btn px-4 py-3 rounded-xl text-sm font-medium border-2 text-center transition-all relative overflow-hidden"
                         :class="answers[q.id] === opt.value
                           ? 'border-primary-500 bg-primary-50 text-primary-700 selected'
-                          : 'border-neutral-200 bg-white text-neutral-500 hover:border-primary-200 hover:bg-primary-50/50'">
+                          : 'border-neutral-400 bg-white text-neutral-500 hover:border-primary-400 hover:bg-primary-50/50'">
                         <div v-if="answers[q.id] === opt.value" 
                           class="absolute -top-1 -right-1 w-5 h-5 bg-primary-500 rounded-full flex items-center justify-center text-white text-xs animate-scale-check shadow-sm shadow-primary-200">
                           ✓
                         </div>
-                        <span class="block text-xs text-neutral-400 mb-0.5">{{ opt.label }}</span>
-                        <span class="block text-lg font-bold" :class="answers[q.id] === opt.value ? 'text-primary-600' : 'text-neutral-300'">{{ opt.value }}</span>
+                        <!-- 语义在前、分值在后：原来标签 12px 灰(1.74:1) 比数字 18px 淡(1.28:1) 更难读，
+                             四个按钮看着像禁用态。改为标签加粗深色、数字降级为辅助。
+                             未选中边框用 neutral-400(#9a7f67)——原 neutral-200 对白底仅 1.55:1，
+                             看不出是按钮；WCAG 1.4.11 要求非文本控件边界 ≥3:1。 -->
+                        <span class="block text-sm font-semibold text-neutral-700 mb-0.5">{{ opt.label }}</span>
+                        <span class="block text-xs font-medium" :class="answers[q.id] === opt.value ? 'text-primary-600' : 'text-neutral-500'">{{ opt.value }} 分</span>
                       </button>
                     </template>
                   </div>
@@ -544,7 +561,7 @@
                 <template v-for="(item, idx) in topGifts.slice(0,3)" :key="item.key">
                   <div class="result-card-glow bg-white rounded-2xl p-6 shadow-md border border-primary-100 text-center relative overflow-hidden">
                     <div class="absolute -top-10 -right-10 w-32 h-32 opacity-20 rounded-full"
-                      :class="idx === 0 ? 'bg-yellow-300' : idx === 1 ? 'bg-slate-300' : 'bg-orange-300'"
+                      :class="idx === 0 ? 'bg-yellow-300' : idx === 1 ? 'bg-neutral-300' : 'bg-orange-300'"
                       style="filter: blur(30px);">
                     </div>
                     <div class="relative">
@@ -639,7 +656,7 @@
                         <div v-for="i in 5" :key="i" class="w-1.5 h-1.5 rounded-full"
                           :class="i <= g.answered ? 'bg-primary-400' : 'bg-neutral-200'"></div>
                       </div>
-                      <span class="text-neutral-300 transition-transform duration-200"
+                      <span class="text-neutral-400 transition-transform duration-200"
                         :class="expandedDef === g.key ? 'rotate-180' : ''">
                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                       </span>
@@ -712,28 +729,28 @@
                 class="export-btn flex flex-col items-center gap-2 px-4 py-5 rounded-2xl bg-gradient-to-br from-primary-50 to-primary-100/50 border border-primary-200 text-primary-700 hover:from-primary-100 hover:to-primary-200 transition-all">
                 <span class="text-2xl">📄</span>
                 <span class="text-sm font-semibold">完整报告</span>
-                <span class="text-xs text-primary-400">答案 + 得分 + 反思</span>
+                <span class="text-xs text-primary-700">答案 + 得分 + 反思</span>
               </button>
               <button @click="exportScores"
-                class="export-btn flex flex-col items-center gap-2 px-4 py-5 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100/50 border border-emerald-200 text-emerald-700 hover:from-emerald-100 hover:to-emerald-200 transition-all">
+                class="export-btn flex flex-col items-center gap-2 px-4 py-5 rounded-2xl bg-gradient-to-br from-orange-50 to-orange-100/50 border border-orange-200 text-orange-700 hover:from-orange-100 hover:to-orange-200 transition-all">
                 <span class="text-2xl">📊</span>
                 <span class="text-sm font-semibold">得分结果</span>
-                <span class="text-xs text-emerald-400">恩赐得分与排名</span>
+                <span class="text-xs text-orange-700">恩赐得分与排名</span>
               </button>
               <button @click="exportAnswers"
                 class="export-btn flex flex-col items-center gap-2 px-4 py-5 rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100/50 border border-amber-200 text-amber-700 hover:from-amber-100 hover:to-amber-200 transition-all">
                 <span class="text-2xl">📝</span>
                 <span class="text-sm font-semibold">作答记录</span>
-                <span class="text-xs text-amber-400">125 道题答案</span>
+                <span class="text-xs text-amber-700">125 道题答案</span>
               </button>
               <button @click="exportReflections"
-                class="export-btn flex flex-col items-center gap-2 px-4 py-5 rounded-2xl bg-gradient-to-br from-rose-50 to-rose-100/50 border border-rose-200 text-rose-700 hover:from-rose-100 hover:to-rose-200 transition-all">
+                class="export-btn flex flex-col items-center gap-2 px-4 py-5 rounded-2xl bg-gradient-to-br from-yellow-50 to-yellow-100/50 border border-yellow-200 text-yellow-700 hover:from-yellow-100 hover:to-yellow-200 transition-all">
                 <span class="text-2xl">💭</span>
                 <span class="text-sm font-semibold">反思</span>
-                <span class="text-xs text-rose-400">事奉反思内容</span>
+                <span class="text-xs text-yellow-700">事奉反思内容</span>
               </button>
             </div>
-            <p class="text-xs text-neutral-300 mt-4">💡 文档将在新标签页打开，点击「🖨️ 打印 / 另存为 PDF」即可保存</p>
+            <p class="text-xs text-neutral-500 mt-4">💡 文档将在新标签页打开，点击「🖨️ 打印 / 另存为 PDF」即可保存</p>
           </div>
         </div>
 
@@ -755,12 +772,15 @@
 
   <script>
     // ===================== DATA =====================
+    /* 题目卡左侧 4px 装饰条每 5 题换一档色。原为 primary/emerald/amber/rose/cyan
+       五色循环，其中绿、青、玫红都跑出了暖色系，是原紫色设计的遗留。
+       该色无语义（只是分组节奏），改用单色相深浅梯。 */
     const CATEGORY_COLORS = [
+      { bar: 'bg-primary-300', bg: 'bg-primary-50', border: 'border-primary-200' },
       { bar: 'bg-primary-400', bg: 'bg-primary-50', border: 'border-primary-200' },
-      { bar: 'bg-emerald-400', bg: 'bg-emerald-50', border: 'border-emerald-200' },
-      { bar: 'bg-amber-400', bg: 'bg-amber-50', border: 'border-amber-200' },
-      { bar: 'bg-rose-400', bg: 'bg-rose-50', border: 'border-rose-200' },
-      { bar: 'bg-cyan-400', bg: 'bg-cyan-50', border: 'border-cyan-200' },
+      { bar: 'bg-primary-500', bg: 'bg-primary-50', border: 'border-primary-200' },
+      { bar: 'bg-primary-600', bg: 'bg-primary-50', border: 'border-primary-200' },
+      { bar: 'bg-primary-700', bg: 'bg-primary-50', border: 'border-primary-200' },
     ];
     function getCategoryColor(id) {
       const colors = CATEGORY_COLORS || [];
@@ -986,24 +1006,24 @@
         + '* { box-sizing: border-box; } '
         + 'body { font-family: "Geist Sans", "Inter", -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; color: #1a1a1a; line-height: 1.7; padding: 20px; margin: 0; } '
         + 'h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; } '
-        + 'h2 { font-size: 18px; font-weight: 600; margin: 24px 0 12px; border-bottom: 2px solid #5645d4; padding-bottom: 4px; color: #3a2a99; } '
-        + 'h3 { font-size: 15px; font-weight: 600; margin: 20px 0 8px; color: #4534b3; } '
+        + 'h2 { font-size: 18px; font-weight: 600; margin: 24px 0 12px; border-bottom: 2px solid #a86428; padding-bottom: 4px; color: #6d3d15; } '
+        + 'h3 { font-size: 15px; font-weight: 600; margin: 20px 0 8px; color: #8a4f1d; } '
         + '.meta { color: #888; font-size: 12px; margin-bottom: 20px; } '
         + '.print-btn { text-align: center; margin: 20px 0; } '
-        + '.print-btn button { padding: 10px 24px; background: #5645d4; color: #fff; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; } '
+        + '.print-btn button { padding: 10px 24px; background: #a86428; color: #fff; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; } '
         + 'table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 11pt; } '
-        + 'th { background: #f0edf9; padding: 8px 10px; text-align: left; font-weight: 600; color: #3a2a99; border: 1px solid #ddd; } '
+        + 'th { background: #f9e7d2; padding: 8px 10px; text-align: left; font-weight: 600; color: #6d3d15; border: 1px solid #ddd; } '
         + 'td { padding: 6px 10px; border: 1px solid #e0e0e0; } '
         + 'tr:nth-child(even) { background: #fafafa; } '
         + '.page-break { page-break-before: always; } '
         + '.radar-img { max-width: 400px; display: block; margin: 16px auto; } '
         + '.qa-item { margin: 4px 0; padding: 5px 8px; border-bottom: 1px solid #f0f0f0; font-size: 10.5pt; } '
         + '.qa-item .q-text { color: #333; } '
-        + '.qa-item .a-text { color: #5645d4; font-weight: 600; } '
+        + '.qa-item .a-text { color: #8a4f1d; font-weight: 600; } '
         + '.answer-summary { color: #666; font-size: 12px; margin-bottom: 16px; } '
         + '.reflection-item { margin: 12px 0; } '
-        + '.reflection-item .label { font-weight: 600; color: #3a2a99; margin-bottom: 4px; } '
-        + '.reflection-item .answer { background: #f9f9f9; padding: 10px 14px; border-radius: 6px; border-left: 3px solid #5645d4; white-space: pre-wrap; }';
+        + '.reflection-item .label { font-weight: 600; color: #6d3d15; margin-bottom: 4px; } '
+        + '.reflection-item .answer { background: #f9f9f9; padding: 10px 14px; border-radius: 6px; border-left: 3px solid #a86428; white-space: pre-wrap; }';
     }
 
     function buildCategoryScoreTable(sortedData) {
@@ -1316,6 +1336,10 @@
           const labels = CATEGORIES.map(c => c.name);
           const data = CATEGORIES.map(c => getCategoryScore(c.key));
 
+          // 网格/标签随主题：浅色用暖褐灰，深色用暖亮褐，避免冷调 slate 混进暖色系
+          const gridColor = isDark.value ? 'rgba(201, 130, 63, 0.22)' : 'rgba(154, 127, 103, 0.28)';
+          const labelColor = isDark.value ? '#dcb98e' : '#5a4230';
+
           radarChartInstance = new Chart(ctx, {
             type: 'radar',
             data: {
@@ -1323,15 +1347,15 @@
               datasets: [{
                 label: '恩赐得分',
                 data: data,
-                backgroundColor: 'rgba(86, 69, 212, 0.08)',
-                borderColor: 'rgba(86, 69, 212, 0.7)',
+                backgroundColor: 'rgba(201, 130, 63, 0.10)',
+                borderColor: 'rgba(168, 100, 40, 0.85)',
                 borderWidth: 2,
-                pointBackgroundColor: 'rgba(86, 69, 212, 0.9)',
-                pointBorderColor: '#fff',
+                pointBackgroundColor: 'rgba(168, 100, 40, 0.95)',
+                pointBorderColor: isDark.value ? '#241c15' : '#fff',
                 pointBorderWidth: 2,
                 pointRadius: 4,
                 pointHoverRadius: 8,
-                pointHoverBackgroundColor: '#5645d4'
+                pointHoverBackgroundColor: '#c9823f'
               }]
             },
             options: {
@@ -1350,14 +1374,14 @@
                     backdropColor: 'transparent'
                   },
                   grid: {
-                    color: 'rgba(148, 163, 184, 0.2)'
+                    color: gridColor
                   },
                   angleLines: {
-                    color: 'rgba(148, 163, 184, 0.2)'
+                    color: gridColor
                   },
                   pointLabels: {
                     font: { size: 11, family: '-apple-system, sans-serif' },
-                    color: '#475569'
+                    color: labelColor
                   }
                 }
               }
@@ -1451,7 +1475,7 @@
           var bodyHtml = '<h1>📋 属灵恩赐测试报告</h1><div class="meta">生成时间：' + timestamp + ' | 完成进度：' + ansCount + '/125</div>'
             + '<h2>📝 作答记录</h2><div class="answer-summary">共 ' + count + ' 道题已作答</div>' + qaHtml
             + '<div class="page-break"></div><h2>📊 得分结果</h2>'
-            + '<div style="margin:12px 0;padding:12px;background:#f8f6ff;border-radius:8px;border:1px solid #5645d4;"><strong>🏆 主要恩赐：</strong> ' + top3Html + '</div>'
+            + '<div style="margin:12px 0;padding:12px;background:#fdf4e9;border-radius:8px;border:1px solid #a86428;"><strong>🏆 主要恩赐：</strong> ' + top3Html + '</div>'
             + scoresHtml + radarImg
             + '<div class="page-break"></div><h2>💭 恩赐与事奉反思</h2>' + refHtml;
 
@@ -1475,8 +1499,8 @@
 
           var timestamp = new Date().toLocaleString('zh-CN');
           var bodyHtml = '<h1>📊 属灵恩赐测试 — 得分结果</h1><div class="meta">生成时间：' + timestamp + '</div>'
-            + '<div style="margin:12px 0;padding:16px;background:#f8f6ff;border-radius:8px;border:1px solid #5645d4;">'
-            + '<h3 style="margin:0 0 8px;color:#3a2a99">🏆 主要恩赐</h3>'
+            + '<div style="margin:12px 0;padding:16px;background:#fdf4e9;border-radius:8px;border:1px solid #a86428;">'
+            + '<h3 style="margin:0 0 8px;color:#6d3d15">🏆 主要恩赐</h3>'
             + '<div style="font-size:16px;">' + top3Html + '</div>'
             + (secondaryHtml ? '<div style="margin-top:8px;font-size:13px;color:#666">🎗️ 次要恩赐：' + secondaryHtml + '</div>' : '')
             + '</div>'
@@ -1523,7 +1547,7 @@
 
           var timestamp = new Date().toLocaleString('zh-CN');
           var bodyHtml = '<h1>💭 属灵恩赐测试 — 事奉反思</h1><div class="meta">生成时间：' + timestamp + '</div>'
-            + '<div style="margin:12px 0;padding:12px;background:#f8f6ff;border-radius:8px;border:1px solid #e0d8f5;font-size:13px"><strong>📊 你的恩赐得分排名：</strong><br>' + giftsContext + '</div>'
+            + '<div style="margin:12px 0;padding:12px;background:#fdf4e9;border-radius:8px;border:1px solid #f0cca4;font-size:13px"><strong>📊 你的恩赐得分排名：</strong><br>' + giftsContext + '</div>'
             + '<h2>反思记录</h2>' + refHtml;
 
           openPrintWindow('属灵恩赐测试 - 事奉反思', bodyHtml);
