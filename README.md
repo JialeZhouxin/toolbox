@@ -12,6 +12,7 @@
 | 🧩 思维模型卡 | [`mental-models/`](mental-models/) | 抽一个思维模型，套到眼前的事上，换角度看问题 |
 | 💍 婚前辅导 | [`premarital/`](premarital/) | 多表单填写、双方对照、JSON 导入导出 |
 | 📖 圣经金句 | [`bible/`](bible/) | 抽经文、记触动你的话、全本检索、每日灵修 |
+| ✨ 属灵恩赐测试 | [`spiritual-gifts/`](spiritual-gifts/) | 125 题测 25 类属灵恩赐，得分排名、雷达图、打印报告 |
 
 ## 使用方式
 
@@ -56,6 +57,14 @@
 - 全本检索按需加载 3.3MB 经文，卷名先用轻量索引秒出，不阻塞界面
 - 原独立仓库 `bible-verse-cards` 已归档，老网址仍可访问
 - 无构建步骤；改动 `bible/src/` 后需 `node bible/scripts/build-bundle.js` 重新生成 `file://` 版本
+
+## 属灵恩赐测试（spiritual-gifts/）
+
+- 125 道题（每类恩赐 5 题，4 级评分）测 25 类属灵恩赐；实时得分预览、雷达图、进度与里程碑
+- 4 条事奉反思；可打印/另存 PDF：完整报告、得分、作答记录、反思四种导出
+- 数据仅存本机浏览器（`localStorage`，`spiritual_gifts_*` 前缀）；深色模式与工具箱共享键 `toolbox-theme`
+- 依赖已本地化到 `vendor/`（Tailwind、Vue 3、Chart.js、Geist Sans 字体），断网可用
+- 来源：原独立仓库 `spiritual-gifts-test`（未归档，老网址仍可访问）
 
 ## 婚前辅导（premarital/）
 
