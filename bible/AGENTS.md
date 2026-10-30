@@ -18,7 +18,7 @@
   - `check-in.js` 打卡与连续天数
   - `stats.js` 统计计算
   - `storage-migration.js` localStorage key 定义与旧数据迁移
-  - `daily-verse-service.js` 每日经文（日期种子）
+  - `daily-verse-service.js` 每日经文（打开页面时随机，会话内保持）
   - `verse-search-service.js` 全本检索（动态 import）
 - `src/ui/`：渲染（`render.js`、`stats-render.js`、`daily-verse-render.js`、`verse-note-render.js`）
 - `src/data/cards.js`：200 条精选金句（首屏用）

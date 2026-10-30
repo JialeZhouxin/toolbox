@@ -3,26 +3,14 @@
  *
  * 卡片显示经文原文 + 出处，并提供「写下感受」「换一句」。
  * 同时显示连续打卡天数与最近 7 天日历（沿用打卡数据）。
+ *
+ * 「今天已写感受」按当天是否有 daily 来源记录判断，不再比对具体出处
+ * （今日经文每次打开都会重新随机，出处不固定）。
  */
+
+import { isTodayVerseAnswered } from '../core/daily-verse-service.js';
 
 const WEEKDAY_NAMES = ['日', '一', '二', '三', '四', '五', '六'];
-
-/**
- * 判断今天是否已写下感受
- * @param {Array} history
- * @param {Object} verse
- * @returns {boolean}
- */
-function hasAnsweredToday(history, verse) {
-    if (!verse) return false;
-    const today = new Date();
-    const todayStr = `${today.getFullYear()}/${today.getMonth() + 1}/${today.getDate()}`;
-    return history.some((item) => {
-        if (!item || !item.card || item.source !== 'daily') return false;
-        const stamp = String(item.timestamp || '').replace(/-/g, '/');
-        return item.card.reference === verse.reference && stamp.startsWith(todayStr);
-    });
-}
 
 /**
  * 渲染迷你日历（最近 N 天，标记已记录的日子）
@@ -92,7 +80,7 @@ export function renderTodayVerse({ container, verse, history = [], streak = 0, o
         return;
     }
 
-    const answered = hasAnsweredToday(history, verse);
+    const answered = isTodayVerseAnswered(history);
 
     container.innerHTML = `
         <div class="daily-card-section">
