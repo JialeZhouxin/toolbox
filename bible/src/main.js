@@ -132,7 +132,10 @@ const categoryNames = Object.fromEntries(categories.map((c) => [c.id, c.name]));
 
 function getSavedAnswerForCurrentCard() {
     if (!state.currentCard) return '';
-    const item = state.history.find((entry) => entry.card.id === state.currentCard.id);
+    const { id, reference } = state.currentCard;
+    // 精选池扩充后卡片 id 会重排，优先按经文出处匹配历史记录
+    const item = state.history.find((entry) => entry.card
+        && (reference ? entry.card.reference === reference : entry.card.id === id));
     return item ? item.answer : '';
 }
 
@@ -603,7 +606,7 @@ function generateShareLink() {
 
         // 构建分享数据
         // 分享数据自带经文，不依赖对方本地有没有这条记录
-        // （手记不在 200 条池里，靠 cardId 查找会失败）
+        // （手记不在精选金句池里，靠 cardId 查找会失败）
         const shareData = {
             cardId: state.currentCard.id,
             category: state.currentCard.category,

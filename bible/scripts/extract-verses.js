@@ -2,6 +2,9 @@
  * Bible Verse Extraction Script
  * Extracts verses from CUS (Chinese Union Version Simplified) books.txt
  * and categorizes them by theme for the Bible Verse Cards app
+ *
+ * LEGACY: 当前 data/verses-categorized.json 已扩充为 1000 条精选，
+ * 运行本脚本会覆盖它。除非要重建初始版本，否则不要运行。
  */
 
 const fs = require('fs');

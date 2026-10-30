@@ -27,7 +27,7 @@
 - 纯前端：HTML + CSS + 原生 ES modules，无构建步骤、无依赖
 - 本地存储：`localStorage`（历史记录、连续天数、主题偏好）
 - 经文数据：
-  - `src/data/cards.js` —— 200 条精选金句（含 7 主题分类），参与首屏
+  - `src/data/cards.js` —— 1000 条精选金句（含 7 主题分类），参与首屏
   - `src/data/bible-full.js` —— 全本简体和合本 66 卷 31105 节，3.3MB，
     打开「记一节经文」时按需 `import()` 加载，不进首屏
   - `data/bible-cn/cus/books.txt` —— 全本的生成源（4MB 纯文本）
@@ -60,6 +60,8 @@ node scripts/build-bible-full.js  # 从 books.txt 重新生成全本经文模块
 ## 数据来源
 
 - 经文全文：圣经简体和合本（CUS）。
+- 金句主题候选：参考 [OpenBible.info](https://www.openbible.info/topics/) 的主题经文投票榜
+  筛选（CC BY 4.0），再按主题关键词与叙事内容过滤，最终文本以本地 CUS 全文为准。
 
 ## 与工具箱的关系
 

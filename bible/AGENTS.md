@@ -21,7 +21,7 @@
   - `daily-verse-service.js` 每日经文（打开页面时随机，会话内保持）
   - `verse-search-service.js` 全本检索（动态 import）
 - `src/ui/`：渲染（`render.js`、`stats-render.js`、`daily-verse-render.js`、`verse-note-render.js`）
-- `src/data/cards.js`：200 条精选金句（首屏用）
+- `src/data/cards.js`：1000 条精选金句（首屏用）
 - `src/data/bible-full.js`：全本 31105 节，**自动生成，勿手改**
 - `src/app.bundle.js`：**自动生成，勿手改**，供 `file://` 使用
 - `src/styles.css`：主题与响应式

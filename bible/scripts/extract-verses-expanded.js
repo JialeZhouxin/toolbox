@@ -2,6 +2,9 @@
  * Bible Verse Extraction Script - Expanded Version
  * Extracts 200 verses from CUS (Chinese Union Version Simplified) books.txt
  * Target: ~28-29 verses per category across 7 categories
+ *
+ * LEGACY: 当前 data/verses-categorized.json 已扩充为 1000 条精选，
+ * 运行本脚本会用旧的 200 条覆盖它。除非要重建旧版本，否则不要运行。
  */
 
 const fs = require('fs');
