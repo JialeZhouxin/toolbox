@@ -12,6 +12,7 @@
 - `src/main.js`：应用引导、状态、事件接线
 - `src/core/`：领域逻辑
   - `card-service.js` 抽卡与主题筛选
+  - `date-utils.js` 本地时区日期格式化与时间戳解析（打卡/统计/今日经文共用）
   - `history-store.js` 灵修记录读写
   - `history-filter.js` 记录筛选与导出
   - `history-export.js` 分享图生成
@@ -29,6 +30,8 @@
 - `data/bible-cn/cus/books.txt`：全本纯文本生成源
 - `src/data/book-names.js`：66 个卷名（约 1KB），**自动生成**，用于
   全本加载前先把卷名下拉渲染出来
+- `vendor/html2canvas.min.js`：本地化的分享图渲染库（MIT），不走 CDN，
+  保证离线也能生成图片
 - `../shared/theme.css`：与仓库其它工具共用的基础样式
 
 新逻辑放 `src/core/`，`src/main.js` 只做编排。

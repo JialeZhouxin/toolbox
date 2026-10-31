@@ -8,6 +8,8 @@
  * 同一出处只出现一次（池中有 2 处重复经文，抽前按出处去重）。
  */
 
+import { getLocalDateString, parseTimestamp } from './date-utils.js';
+
 let currentVerse = null;
 
 /**
@@ -16,10 +18,7 @@ let currentVerse = null;
  * @returns {string}
  */
 export function getTodayString(date = new Date()) {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
+    return getLocalDateString(date);
 }
 
 /**
@@ -99,17 +98,20 @@ export function nextTodayVerse(cards) {
  * 今天是否已经写过今日经文的感受
  *
  * 经文每次打开都会变，无法再按出处比对，因此按「今天是否有 daily
- * 来源的灵修记录」判断。
+ * 来源的灵修记录」判断。时间戳是 zh-CN 格式且月/日不补零
+ * （如 2026/9/5 08:01:00），不能直接做字符串前缀比较，需先解析。
  *
  * @param {Array} history
  * @returns {boolean}
  */
 export function isTodayVerseAnswered(history) {
     if (!Array.isArray(history) || !history.length) return false;
-    const today = getTodayString().replace(/-/g, '/');
+    const today = getTodayString();
     return history.some((item) => {
         if (!item || !item.card) return false;
         if (item.source !== 'daily') return false;
-        return String(item.timestamp || '').startsWith(today);
+        const date = parseTimestamp(item.timestamp);
+        if (Number.isNaN(date.getTime())) return false;
+        return getLocalDateString(date) === today;
     });
 }

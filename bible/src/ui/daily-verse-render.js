@@ -9,6 +9,7 @@
  */
 
 import { isTodayVerseAnswered } from '../core/daily-verse-service.js';
+import { getLocalDateString, parseTimestamp } from '../core/date-utils.js';
 
 const WEEKDAY_NAMES = ['日', '一', '二', '三', '四', '五', '六'];
 
@@ -21,9 +22,9 @@ const WEEKDAY_NAMES = ['日', '一', '二', '三', '四', '五', '六'];
 function renderMiniCalendar(history, days = 7) {
     const stamps = new Set(
         history.map((item) => {
-            const d = new Date(String(item.timestamp || '').replace(/\//g, '-'));
+            const d = parseTimestamp(item.timestamp);
             if (Number.isNaN(d.getTime())) return null;
-            return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+            return getLocalDateString(d);
         }).filter(Boolean)
     );
 
@@ -31,7 +32,7 @@ function renderMiniCalendar(history, days = 7) {
     for (let i = days - 1; i >= 0; i--) {
         const d = new Date();
         d.setDate(d.getDate() - i);
-        const key = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+        const key = getLocalDateString(d);
         const done = stamps.has(key);
         const isToday = i === 0;
         const cls = ['calendar-day', done ? 'completed' : '', isToday ? 'today' : ''].filter(Boolean).join(' ');

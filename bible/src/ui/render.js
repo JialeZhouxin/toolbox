@@ -98,10 +98,8 @@ export function renderHistory({ history, categoryNames, historyList, onEdit, onD
         const SOURCE_LABELS = { draw: '抽卡', daily: '每日', note: '手记' };
         const source = item.source || 'draw';
         const tagsRow = createElement('div', 'history-item-tags');
-        if (item.source || item.source === undefined) {
-            const sourceTag = createElement('span', `source-tag source-${source}`, SOURCE_LABELS[source] || source);
-            tagsRow.appendChild(sourceTag);
-        }
+        const sourceTag = createElement('span', `source-tag source-${source}`, SOURCE_LABELS[source] || source);
+        tagsRow.appendChild(sourceTag);
         if (card.category && card.category !== 'note') {
             // CSS 类名与显示名都按主题 id 取，不能拿中文 category 拼类名
             const themeId = getCardThemeId(card);

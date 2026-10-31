@@ -18,6 +18,8 @@ import { categories } from '../data/cards.js';
 export function getCardThemeId(card) {
     if (!card) return '';
     if (card.categoryEn) return card.categoryEn;
+    // 手记不属于 7 个主题，用单独的 id，供筛选/统计识别
+    if (card.category === 'note') return 'note';
     // 回退：老数据可能只存了中文名，反查 categories 得到 id
     const match = categories.find((c) => c.name === card.category);
     return match ? match.id : '';

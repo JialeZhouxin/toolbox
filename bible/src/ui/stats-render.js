@@ -32,7 +32,7 @@ export function renderStatsOverview({ container, history }) {
             </div>
             <div class="stat-card">
                 <div class="stat-value">${stats.weekCount}</div>
-                <div class="stat-label">本周回答</div>
+                <div class="stat-label">近7天回答</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value">${stats.todayCount}</div>
@@ -314,39 +314,7 @@ export async function renderFullStatsReport({ container, history, onExportImage 
     renderPieChart({ container: categoryChartContainer, data: report.categoryDistribution, title: '主题分布' });
     renderPieChart({ container: sourceChartContainer, data: report.sourceDistribution, title: '记录来源' });
 
-    // 动态导入避免循环依赖
-    const activity = calculateDailyActivity(history, 7);
-    const maxCount = Math.max(...activity.map(d => d.count), 1);
-
-    let daysHtml = '';
-    activity.forEach(day => {
-        const intensity = day.count === 0 ? 0 : Math.ceil((day.count / maxCount) * 4);
-        const intensityClass = `heatmap-day-intensity-${intensity}`;
-        daysHtml += `
-            <div class="heatmap-day ${intensityClass} ${day.isToday ? 'heatmap-day-today' : ''}">
-                <div class="heatmap-day-count">${day.count > 0 ? day.count : ''}</div>
-                <div class="heatmap-day-name">${day.dayName}</div>
-            </div>
-        `;
-    });
-
-    activitySection.innerHTML = `
-        <div class="heatmap-container">
-            <div class="chart-title">最近7天活跃度</div>
-            <div class="heatmap-days">
-                ${daysHtml}
-            </div>
-            <div class="heatmap-legend">
-                <span>少</span>
-                <div class="heatmap-legend-box intensity-1"></div>
-                <div class="heatmap-legend-box intensity-2"></div>
-                <div class="heatmap-legend-box intensity-3"></div>
-                <div class="heatmap-legend-box intensity-4"></div>
-                <span>多</span>
-            </div>
-        </div>
-    `;
-
+    renderActivityHeatmap({ container: activitySection, history });
     renderCheckInCalendar({ container: calendarSection });
     renderInsights({ container: insightsSection, insights: report.insights });
 

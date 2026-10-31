@@ -24,7 +24,9 @@
 
 ## 技术实现
 
-- 纯前端：HTML + CSS + 原生 ES modules，无构建步骤、无依赖
+- 纯前端：HTML + CSS + 原生 ES modules，无构建步骤
+- 第三方库只有 html2canvas，已本地化到 `vendor/`，断网也能生成分享图；
+  字体走 Google Fonts，离线时回退到系统字体（不影响功能）
 - 本地存储：`localStorage`（历史记录、连续天数、主题偏好）
 - 经文数据：
   - `src/data/cards.js` —— 1000 条精选金句（含 7 主题分类），参与首屏

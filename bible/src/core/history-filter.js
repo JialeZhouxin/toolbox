@@ -3,31 +3,13 @@
  */
 
 import { getCardThemeId } from './card-service.js';
+import { parseTimestamp } from './date-utils.js';
 
 const SOURCE_LABELS = {
     draw: '抽取金句',
     daily: '今日经文',
     note: '手记'
 };
-
-/**
- * 解析记录时间戳。
- * 历史时间戳是 zh-CN 的本地格式（如 2026/9/17 16:01:32），
- * 部分旧数据可能是 ISO 字符串，两种都要能解析。
- * @param {string} timestamp
- * @returns {Date}
- */
-function parseTimestamp(timestamp) {
-    const text = String(timestamp || '');
-    // zh-CN 本地格式：斜杠分隔
-    if (/^\d{4}\/\d{1,2}\/\d{1,2}/.test(text)) {
-        const [datePart, timePart = ''] = text.split(' ');
-        const [y, m, d] = datePart.split('/').map(Number);
-        const [hh = 0, mm = 0, ss = 0] = timePart ? timePart.split(':').map(Number) : [];
-        return new Date(y, m - 1, d, hh, mm, ss);
-    }
-    return new Date(text);
-}
 
 /**
  * 取当天零点
@@ -196,4 +178,4 @@ export function generateHistoryStats(history) {
     return stats;
 }
 
-export { SOURCE_LABELS, parseTimestamp };
+export { SOURCE_LABELS };

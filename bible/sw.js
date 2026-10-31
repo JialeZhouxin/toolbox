@@ -2,7 +2,7 @@
 /* CacheStorage 按 origin 共享，activate 只清理带本前缀的键，
    否则会把同站其它工具（heart-talk / premarital）的缓存一起删掉。 */
 const CACHE_PREFIX = "bible-";
-const CACHE = "bible-c15ab8c5";
+const CACHE = "bible-647c0457";
 const ASSETS = [
   "./",
   "./index.html",
@@ -13,7 +13,9 @@ const ASSETS = [
   "./src/styles.css",
   "./src/main.js",
   "./src/data/cards.js",
+  "./src/data/book-names.js",
   "./src/core/card-service.js",
+  "./src/core/date-utils.js",
   "./src/core/history-store.js",
   "./src/core/history-filter.js",
   "./src/core/history-export.js",
@@ -26,6 +28,8 @@ const ASSETS = [
   "./src/ui/stats-render.js",
   "./src/ui/daily-verse-render.js",
   "./src/ui/verse-note-render.js",
+  "./src/ui/voice-render.js",
+  "./vendor/html2canvas.min.js",
 ];
 
 self.addEventListener("install", (event) => {

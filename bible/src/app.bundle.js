@@ -3,7 +3,7 @@
  *
  * 用途：file:// 直接打开 index.html 时加载（此协议下不能用 ES modules）。
  * 生成：node scripts/build-bundle.js
- * 模块顺序（18 个）： src/data/cards.js, src/core/card-service.js, src/core/storage-migration.js, src/core/history-store.js, src/core/history-filter.js, src/core/history-export.js, src/ui/render.js, src/core/stats.js, src/core/check-in.js, src/ui/stats-render.js, src/core/daily-verse-service.js, src/ui/daily-verse-render.js, src/core/verse-search-service.js, src/data/book-names.js, src/ui/verse-note-render.js, src/core/voice-service.js, src/ui/voice-render.js, src/main.js
+ * 模块顺序（19 个）： src/data/cards.js, src/core/card-service.js, src/core/storage-migration.js, src/core/history-store.js, src/core/date-utils.js, src/core/history-filter.js, src/core/history-export.js, src/ui/render.js, src/core/stats.js, src/core/check-in.js, src/ui/stats-render.js, src/core/daily-verse-service.js, src/ui/daily-verse-render.js, src/core/verse-search-service.js, src/data/book-names.js, src/ui/verse-note-render.js, src/core/voice-service.js, src/ui/voice-render.js, src/main.js
  * 未打包（体积大 / 动态 import）： src/data/bible-full.js
  */
 
@@ -10064,6 +10064,8 @@ function getCardById(id) {
 function getCardThemeId(card) {
     if (!card) return '';
     if (card.categoryEn) return card.categoryEn;
+    // 手记不属于 7 个主题，用单独的 id，供筛选/统计识别
+    if (card.category === 'note') return 'note';
     // 回退：老数据可能只存了中文名，反查 categories 得到 id
     const match = categories.find((c) => c.name === card.category);
     return match ? match.id : '';
@@ -10322,6 +10324,62 @@ function deleteHistoryItem(history, id) {
     }
 }
 
+// ==================== src/core/date-utils.js ====================
+/**
+ * 日期工具
+ *
+ * 本应用里有两类日期字符串：
+ * - 历史记录时间戳：zh-CN 本地格式（如 2026/9/17 16:01:32，月/日不补零）
+ * - 打卡日期：YYYY-MM-DD
+ *
+ * 这两类都不能直接交给 new Date()：
+ * - '2026-10-30 14:00:00' 在 Safari 里会被解析成 Invalid Date；
+ * - toISOString() 取的是 UTC 日期，东八区早上 8 点前会算成前一天。
+ *
+ * 所以统一在这里按本地时区格式化与解析。
+ */
+
+/**
+ * 取本地日期字符串 YYYY-MM-DD
+ * @param {Date} [date]
+ * @returns {string}
+ */
+function getLocalDateString(date = new Date()) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
+/**
+ * 把 YYYY-MM-DD 解析成当天零点的本地 Date
+ * @param {string} dateStr
+ * @returns {Date}
+ */
+function parseLocalDateString(dateStr) {
+    const match = String(dateStr || '').match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if (!match) return new Date(NaN);
+    return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+}
+
+/**
+ * 解析历史记录时间戳，兼容 zh-CN 本地格式与 ISO 字符串
+ * @param {string} timestamp
+ * @returns {Date}
+ */
+function parseTimestamp(timestamp) {
+    const text = String(timestamp || '');
+    // zh-CN 本地格式：斜杠分隔，月/日可能不补零
+    if (/^\d{4}\/\d{1,2}\/\d{1,2}/.test(text)) {
+        const [datePart, timePart = ''] = text.split(' ');
+        const [y, m, d] = datePart.split('/').map(Number);
+        const [hh = 0, mm = 0, ss = 0] = timePart ? timePart.split(':').map(Number) : [];
+        return new Date(y, m - 1, d, hh, mm, ss);
+    }
+    // ISO 字符串（如导出文件里的时间）
+    return new Date(text);
+}
+
 // ==================== src/core/history-filter.js ====================
 /**
  * 灵修记录的筛选与导出
@@ -10331,25 +10389,6 @@ const SOURCE_LABELS = {
     daily: '今日经文',
     note: '手记'
 };
-
-/**
- * 解析记录时间戳。
- * 历史时间戳是 zh-CN 的本地格式（如 2026/9/17 16:01:32），
- * 部分旧数据可能是 ISO 字符串，两种都要能解析。
- * @param {string} timestamp
- * @returns {Date}
- */
-function parseTimestamp(timestamp) {
-    const text = String(timestamp || '');
-    // zh-CN 本地格式：斜杠分隔
-    if (/^\d{4}\/\d{1,2}\/\d{1,2}/.test(text)) {
-        const [datePart, timePart = ''] = text.split(' ');
-        const [y, m, d] = datePart.split('/').map(Number);
-        const [hh = 0, mm = 0, ss = 0] = timePart ? timePart.split(':').map(Number) : [];
-        return new Date(y, m - 1, d, hh, mm, ss);
-    }
-    return new Date(text);
-}
 
 /**
  * 取当天零点
@@ -10565,12 +10604,12 @@ async function generateHistoryAlbumImage(history, categoryNames) {
                     color: #2e7d32;
                     margin: 0 0 15px 0;
                     font-weight: 700;
-                ">心语卡牌纪念册</h1>
+                ">圣经金句 · 灵修纪念册</h1>
                 <p style="
                     font-size: 18px;
                     color: #666;
                     margin: 0;
-                ">记录每一次心灵的对话</p>
+                ">记录每一次与神的相遇</p>
                 <p style="
                     font-size: 14px;
                     color: #999;
@@ -10580,7 +10619,7 @@ async function generateHistoryAlbumImage(history, categoryNames) {
 
             <!-- 统计概览 -->
             <div style="margin-bottom: 40px; padding: 25px; background: #f8f9fa; border-radius: 15px;">
-                <h2 style="font-size: 24px; color: #333; margin: 0 0 20px 0;">📊 对话统计</h2>
+                <h2 style="font-size: 24px; color: #333; margin: 0 0 20px 0;">📊 灵修统计</h2>
                 <div style="display: flex; gap: 30px; flex-wrap: wrap;">
                     <div style="text-align: center;">
                         <div style="font-size: 36px; font-weight: bold; color: #2e7d32;">${stats.totalCount}</div>
@@ -10589,7 +10628,7 @@ async function generateHistoryAlbumImage(history, categoryNames) {
                     ${Object.entries(stats.byCategory).map(([cat, count]) => `
                         <div style="text-align: center;">
                             <div style="font-size: 28px; font-weight: bold; color: #4caf50;">${count}</div>
-                            <div style="font-size: 14px; color: #666;">${categoryNames[cat] || cat}</div>
+                            <div style="font-size: 14px; color: #666;">${cat === 'note' ? '手记' : (categoryNames[cat] || cat)}</div>
                         </div>
                     `).join('')}
                 </div>
@@ -10605,7 +10644,9 @@ async function generateHistoryAlbumImage(history, categoryNames) {
         const card = item.card || {};
         // 主题名与配色都按英文 id 取（card.category 是中文，只作显示回退）
         const themeId = getCardThemeId(card);
-        const categoryName = categoryNames[themeId] || card.category || '';
+        const categoryName = themeId === 'note'
+            ? '手记'
+            : (categoryNames[themeId] || card.category || '');
         
         albumHTML += `
             <div style="
@@ -10711,7 +10752,7 @@ async function generateHistoryAlbumImage(history, categoryNames) {
  */
 function downloadAlbumImage(dataUrl) {
     const link = document.createElement('a');
-    link.download = `圣经金句灵修记录_${new Date().toISOString().slice(0, 10)}.png`;
+    link.download = `圣经金句灵修记录_${getLocalDateString()}.png`;
     link.href = dataUrl;
     link.click();
 }
@@ -10719,7 +10760,6 @@ function downloadAlbumImage(dataUrl) {
 /**
  * 生成并下载PDF纪念册
  * @param {Array} history - 历史记录数组
- * @param {Object} categoryNames - 类别名称映射
  * @param {Object} categoryNames - 主题名称映射
  */
 async function generatePDFAlbum(history, categoryNames) {
@@ -10755,7 +10795,8 @@ function getCategoryColor(category) {
         strength: '#F39C12',
         wisdom: '#1ABC9C',
         forgiveness: '#3498DB',
-        hope: '#E67E22'
+        hope: '#E67E22',
+        note: '#1ABC9C'
     };
     return colors[category] || '#4caf50';
 }
@@ -10880,10 +10921,8 @@ function renderHistory({ history, categoryNames, historyList, onEdit, onDelete }
         const SOURCE_LABELS = { draw: '抽卡', daily: '每日', note: '手记' };
         const source = item.source || 'draw';
         const tagsRow = createElement('div', 'history-item-tags');
-        if (item.source || item.source === undefined) {
-            const sourceTag = createElement('span', `source-tag source-${source}`, SOURCE_LABELS[source] || source);
-            tagsRow.appendChild(sourceTag);
-        }
+        const sourceTag = createElement('span', `source-tag source-${source}`, SOURCE_LABELS[source] || source);
+        tagsRow.appendChild(sourceTag);
         if (card.category && card.category !== 'note') {
             // CSS 类名与显示名都按主题 id 取，不能拿中文 category 拼类名
             const themeId = getCardThemeId(card);
@@ -11118,27 +11157,9 @@ categories.forEach((c) => {
     CATEGORY_NAMES[c.id] = c.name;
     CATEGORY_COLORS[c.id] = c.color;
 });
-
-/**
- * 解析历史记录时间戳为 Date 对象
- * @param {string} timestamp - 本地时间字符串 (zh-CN 格式)
- * @returns {Date}
- */
-function parseTimestamp(timestamp) {
-    return new Date(String(timestamp).replace(/\//g, '-'));
-}
-
-/**
- * 获取日期字符串 (YYYY-MM-DD)
- * @param {Date} date
- * @returns {string}
- */
-function getDateString(date) {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-}
+// 手记不属于 7 个主题，但也会进统计，单独给个名字和颜色
+CATEGORY_NAMES.note = '手记';
+CATEGORY_COLORS.note = '#1ABC9C';
 
 /**
  * 计算基础统计数据
@@ -11156,7 +11177,7 @@ function calculateBasicStats(history) {
     }
 
     const now = new Date();
-    const today = getDateString(now);
+    const today = getLocalDateString(now);
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
 
@@ -11166,7 +11187,7 @@ function calculateBasicStats(history) {
 
     history.forEach(item => {
         const itemDate = parseTimestamp(item.timestamp);
-        const itemDateStr = getDateString(itemDate);
+        const itemDateStr = getLocalDateString(itemDate);
 
         if (itemDateStr === today) {
             todayCount++;
@@ -11255,11 +11276,11 @@ function calculateDailyActivity(history, days = 7) {
     for (let i = days - 1; i >= 0; i--) {
         const date = new Date(now);
         date.setDate(date.getDate() - i);
-        const dateStr = getDateString(date);
+        const dateStr = getLocalDateString(date);
         const dayName = i === 0 ? '今天' : i === 1 ? '昨天' : `${date.getMonth() + 1}/${date.getDate()}`;
 
         const count = history.filter(item => {
-            const itemDate = getDateString(parseTimestamp(item.timestamp));
+            const itemDate = getLocalDateString(parseTimestamp(item.timestamp));
             return itemDate === dateStr;
         }).length;
 
@@ -11306,7 +11327,7 @@ function generateInsights(history, stats) {
 
     // 活跃度洞察
     if (stats.weekCount >= 5) {
-        insights.push('本周灵修很稳定，愿神的话继续滋养你。');
+        insights.push('近7天灵修很稳定，愿神的话继续滋养你。');
     } else if (stats.todayCount > 0) {
         insights.push('今天也有新的领受，感谢神的恩典。');
     }
@@ -11346,15 +11367,6 @@ function generateFullReport(history, streakDays = 0) {
  * 管理用户连续打卡天数和打卡历史
  */
 const CHECKIN_KEY = STORAGE_KEYS.checkIn;
-
-/**
- * 获取日期字符串 (YYYY-MM-DD)
- * @param {Date} date
- * @returns {string}
- */
-function getDateString(date) {
-    return date.toISOString().split('T')[0];
-}
 
 /**
  * 加载打卡数据
@@ -11400,21 +11412,21 @@ function isTodayCheckedIn(checkInData) {
     if (!checkInData || !checkInData.lastDate) {
         return false;
     }
-    const today = getDateString(new Date());
+    const today = getLocalDateString();
     return checkInData.lastDate === today;
 }
 
 /**
  * 计算两个日期之间的天数差
+ * 两个日期都按本地零点解析，避免时区/夏令时导致的 23/25 小时问题
  * @param {string} dateStr1 - YYYY-MM-DD
  * @param {string} dateStr2 - YYYY-MM-DD
  * @returns {number}
  */
 function daysBetween(dateStr1, dateStr2) {
-    const d1 = new Date(dateStr1);
-    const d2 = new Date(dateStr2);
-    const diffTime = Math.abs(d2 - d1);
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const d1 = parseLocalDateString(dateStr1);
+    const d2 = parseLocalDateString(dateStr2);
+    return Math.round(Math.abs(d2 - d1) / (1000 * 60 * 60 * 24));
 }
 
 /**
@@ -11424,7 +11436,7 @@ function daysBetween(dateStr1, dateStr2) {
  */
 function doCheckIn() {
     const data = loadCheckInData();
-    const today = getDateString(new Date());
+    const today = getLocalDateString();
 
     // 今天已打卡，直接返回
     if (data.lastDate === today) {
@@ -11495,7 +11507,8 @@ function getMonthlyCheckInCount() {
     const currentYear = now.getFullYear();
 
     return data.dates.filter(dateStr => {
-        const date = new Date(dateStr);
+        const date = parseLocalDateString(dateStr);
+        if (Number.isNaN(date.getTime())) return false;
         return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
     }).length;
 }
@@ -11513,7 +11526,7 @@ function getRecentCheckInStatus(days = 7) {
     for (let i = days - 1; i >= 0; i--) {
         const date = new Date(now);
         date.setDate(date.getDate() - i);
-        const dateStr = getDateString(date);
+        const dateStr = getLocalDateString(date);
 
         result.push({
             date: dateStr,
@@ -11568,7 +11581,7 @@ function renderStatsOverview({ container, history }) {
             </div>
             <div class="stat-card">
                 <div class="stat-value">${stats.weekCount}</div>
-                <div class="stat-label">本周回答</div>
+                <div class="stat-label">近7天回答</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value">${stats.todayCount}</div>
@@ -11850,39 +11863,7 @@ async function renderFullStatsReport({ container, history, onExportImage }) {
     renderPieChart({ container: categoryChartContainer, data: report.categoryDistribution, title: '主题分布' });
     renderPieChart({ container: sourceChartContainer, data: report.sourceDistribution, title: '记录来源' });
 
-    // 动态导入避免循环依赖
-    const activity = calculateDailyActivity(history, 7);
-    const maxCount = Math.max(...activity.map(d => d.count), 1);
-
-    let daysHtml = '';
-    activity.forEach(day => {
-        const intensity = day.count === 0 ? 0 : Math.ceil((day.count / maxCount) * 4);
-        const intensityClass = `heatmap-day-intensity-${intensity}`;
-        daysHtml += `
-            <div class="heatmap-day ${intensityClass} ${day.isToday ? 'heatmap-day-today' : ''}">
-                <div class="heatmap-day-count">${day.count > 0 ? day.count : ''}</div>
-                <div class="heatmap-day-name">${day.dayName}</div>
-            </div>
-        `;
-    });
-
-    activitySection.innerHTML = `
-        <div class="heatmap-container">
-            <div class="chart-title">最近7天活跃度</div>
-            <div class="heatmap-days">
-                ${daysHtml}
-            </div>
-            <div class="heatmap-legend">
-                <span>少</span>
-                <div class="heatmap-legend-box intensity-1"></div>
-                <div class="heatmap-legend-box intensity-2"></div>
-                <div class="heatmap-legend-box intensity-3"></div>
-                <div class="heatmap-legend-box intensity-4"></div>
-                <span>多</span>
-            </div>
-        </div>
-    `;
-
+    renderActivityHeatmap({ container: activitySection, history });
     renderCheckInCalendar({ container: calendarSection });
     renderInsights({ container: insightsSection, insights: report.insights });
 
@@ -11912,10 +11893,7 @@ let currentVerse = null;
  * @returns {string}
  */
 function getTodayString(date = new Date()) {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
+    return getLocalDateString(date);
 }
 
 /**
@@ -11995,18 +11973,21 @@ function nextTodayVerse(cards) {
  * 今天是否已经写过今日经文的感受
  *
  * 经文每次打开都会变，无法再按出处比对，因此按「今天是否有 daily
- * 来源的灵修记录」判断。
+ * 来源的灵修记录」判断。时间戳是 zh-CN 格式且月/日不补零
+ * （如 2026/9/5 08:01:00），不能直接做字符串前缀比较，需先解析。
  *
  * @param {Array} history
  * @returns {boolean}
  */
 function isTodayVerseAnswered(history) {
     if (!Array.isArray(history) || !history.length) return false;
-    const today = getTodayString().replace(/-/g, '/');
+    const today = getTodayString();
     return history.some((item) => {
         if (!item || !item.card) return false;
         if (item.source !== 'daily') return false;
-        return String(item.timestamp || '').startsWith(today);
+        const date = parseTimestamp(item.timestamp);
+        if (Number.isNaN(date.getTime())) return false;
+        return getLocalDateString(date) === today;
     });
 }
 
@@ -12031,9 +12012,9 @@ const WEEKDAY_NAMES = ['日', '一', '二', '三', '四', '五', '六'];
 function renderMiniCalendar(history, days = 7) {
     const stamps = new Set(
         history.map((item) => {
-            const d = new Date(String(item.timestamp || '').replace(/\//g, '-'));
+            const d = parseTimestamp(item.timestamp);
             if (Number.isNaN(d.getTime())) return null;
-            return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+            return getLocalDateString(d);
         }).filter(Boolean)
     );
 
@@ -12041,7 +12022,7 @@ function renderMiniCalendar(history, days = 7) {
     for (let i = days - 1; i >= 0; i--) {
         const d = new Date();
         d.setDate(d.getDate() - i);
-        const key = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+        const key = getLocalDateString(d);
         const done = stamps.has(key);
         const isToday = i === 0;
         const cls = ['calendar-day', done ? 'completed' : '', isToday ? 'today' : ''].filter(Boolean).join(' ');
@@ -12950,9 +12931,9 @@ function createReadAloudButton(options = {}) {
     const button = document.createElement('button');
     button.className = `voice-btn voice-read-btn ${isActive ? 'active' : ''}`;
     button.setAttribute('type', 'button');
-    button.setAttribute('aria-label', isActive ? '停止朗读' : '朗读问题');
+    button.setAttribute('aria-label', isActive ? '停止朗读' : '朗读经文');
     button.setAttribute('aria-pressed', String(isActive));
-    button.setAttribute('title', isActive ? '点击停止朗读' : '点击朗读问题');
+    button.setAttribute('title', isActive ? '点击停止朗读' : '点击朗读经文');
     button.disabled = disabled;
 
     // 图标
@@ -12967,13 +12948,7 @@ function createReadAloudButton(options = {}) {
     labelSpan.textContent = isActive ? '停止' : '朗读';
     button.appendChild(labelSpan);
 
-    // 键盘无障碍支持
-    button.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            if (onClick) onClick();
-        }
-    });
+    // 原生 button 已处理 Enter / 空格，不要再自己监听 keydown，否则会触发两次
 
     // 点击事件
     if (onClick) {
@@ -13017,13 +12992,7 @@ function createVoiceInputButton(options = {}) {
         button.appendChild(labelSpan);
     }
 
-    // 键盘无障碍支持
-    button.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            if (onClick) onClick();
-        }
-    });
+    // 原生 button 已处理 Enter / 空格，不要再自己监听 keydown，否则会触发两次
 
     // 点击事件
     if (onClick) {
@@ -13116,12 +13085,12 @@ function updateVoiceButtonState(button, options = {}) {
     // 更新标题
     button.setAttribute('title', isActive
         ? (type === 'read' ? '点击停止朗读' : '点击停止录音')
-        : (type === 'read' ? '点击朗读问题' : '点击开始语音输入')
+        : (type === 'read' ? '点击朗读经文' : '点击开始语音输入')
     );
 
     button.setAttribute('aria-label', isActive
         ? (type === 'read' ? '停止朗读' : '停止语音输入')
-        : (type === 'read' ? '朗读问题' : '开始语音输入')
+        : (type === 'read' ? '朗读经文' : '开始语音输入')
     );
 }
 
@@ -13386,6 +13355,18 @@ let currentGeneratedImage = null;
 // 主题名称以 cards.js 的 categories 为唯一真源（不再从 HTML 按钮文案反推）
 const categoryNames = Object.fromEntries(categories.map((c) => [c.id, c.name]));
 
+/**
+ * 生成记录 id
+ * Date.now() 在同一毫秒内保存两条会撞车，改为 UUID（不支持时退回随机后缀）
+ * @returns {string}
+ */
+function createRecordId() {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+    }
+    return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 function getSavedAnswerForCurrentCard() {
     if (!state.currentCard) return '';
     const { id, reference } = state.currentCard;
@@ -13613,6 +13594,15 @@ function showConfirm(message) {
     });
 }
 
+/**
+ * 停止正在进行的朗读（换一张卡时不能继续念上一节）
+ */
+function stopReading() {
+    if (!state.voice.isReading) return;
+    if (state.voice.synthesizer) state.voice.synthesizer.cancel();
+    state.voice.isReading = false;
+}
+
 function drawCard() {
     const filtered = filterCards(cards, state.currentCategory);
 
@@ -13621,6 +13611,7 @@ function drawCard() {
         return;
     }
 
+    stopReading();
     state.currentCard = drawRandomCard(filtered);
     refreshCardView();
     elements.cardContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -13656,7 +13647,7 @@ function saveAnswer() {
     }
 
     const historyItem = {
-        id: Date.now(),
+        id: createRecordId(),
         timestamp: new Date().toLocaleString('zh-CN'),
         card: state.currentCard,
         answer,
@@ -13936,7 +13927,7 @@ function handleShareLink() {
         // 如果有回答，添加到历史中
         if (shareData.answer) {
             const historyItem = {
-                id: Date.now(),
+                id: createRecordId(),
                 timestamp: new Date(shareData.timestamp || Date.now()).toLocaleString('zh-CN'),
                 card: card,
                 answer: shareData.answer,
@@ -14194,6 +14185,7 @@ function handleNextVerse() {
         showToast('暂时取不到今日经文', 'error');
         return;
     }
+    stopReading();
     state.currentCard = verse;
     initTodayVerse();
     showToast('已换一句', 'success');
@@ -14226,6 +14218,13 @@ function handleReadAloud() {
         return;
     }
 
+    // 读经文原文；手记卡没有 text 时才退回引导语
+    const verseText = state.currentCard.text || state.currentCard.question || '';
+    if (!verseText) {
+        showToast('这节经文没有可朗读的内容', 'error');
+        return;
+    }
+
     // 如果正在朗读，则停止
     if (state.voice.isReading) {
         state.voice.synthesizer.cancel();
@@ -14248,7 +14247,7 @@ function handleReadAloud() {
         disabled: false
     });
 
-    state.voice.synthesizer.speak(state.currentCard.question, {
+    state.voice.synthesizer.speak(verseText, {
         rate: 0.9,
         pitch: 1.0,
         onEnd: () => {

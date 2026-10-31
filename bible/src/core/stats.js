@@ -5,6 +5,7 @@
 
 import { categories } from '../data/cards.js';
 import { getCardThemeId } from './card-service.js';
+import { getLocalDateString, parseTimestamp } from './date-utils.js';
 
 // 主题名称/配色（以 cards.js 的 categories 为唯一真源）
 const CATEGORY_NAMES = {};
@@ -13,27 +14,9 @@ categories.forEach((c) => {
     CATEGORY_NAMES[c.id] = c.name;
     CATEGORY_COLORS[c.id] = c.color;
 });
-
-/**
- * 解析历史记录时间戳为 Date 对象
- * @param {string} timestamp - 本地时间字符串 (zh-CN 格式)
- * @returns {Date}
- */
-function parseTimestamp(timestamp) {
-    return new Date(String(timestamp).replace(/\//g, '-'));
-}
-
-/**
- * 获取日期字符串 (YYYY-MM-DD)
- * @param {Date} date
- * @returns {string}
- */
-function getDateString(date) {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-}
+// 手记不属于 7 个主题，但也会进统计，单独给个名字和颜色
+CATEGORY_NAMES.note = '手记';
+CATEGORY_COLORS.note = '#1ABC9C';
 
 /**
  * 计算基础统计数据
@@ -51,7 +34,7 @@ export function calculateBasicStats(history) {
     }
 
     const now = new Date();
-    const today = getDateString(now);
+    const today = getLocalDateString(now);
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
 
@@ -61,7 +44,7 @@ export function calculateBasicStats(history) {
 
     history.forEach(item => {
         const itemDate = parseTimestamp(item.timestamp);
-        const itemDateStr = getDateString(itemDate);
+        const itemDateStr = getLocalDateString(itemDate);
 
         if (itemDateStr === today) {
             todayCount++;
@@ -150,11 +133,11 @@ export function calculateDailyActivity(history, days = 7) {
     for (let i = days - 1; i >= 0; i--) {
         const date = new Date(now);
         date.setDate(date.getDate() - i);
-        const dateStr = getDateString(date);
+        const dateStr = getLocalDateString(date);
         const dayName = i === 0 ? '今天' : i === 1 ? '昨天' : `${date.getMonth() + 1}/${date.getDate()}`;
 
         const count = history.filter(item => {
-            const itemDate = getDateString(parseTimestamp(item.timestamp));
+            const itemDate = getLocalDateString(parseTimestamp(item.timestamp));
             return itemDate === dateStr;
         }).length;
 
@@ -201,7 +184,7 @@ export function generateInsights(history, stats) {
 
     // 活跃度洞察
     if (stats.weekCount >= 5) {
-        insights.push('本周灵修很稳定，愿神的话继续滋养你。');
+        insights.push('近7天灵修很稳定，愿神的话继续滋养你。');
     } else if (stats.todayCount > 0) {
         insights.push('今天也有新的领受，感谢神的恩典。');
     }

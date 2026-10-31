@@ -18,9 +18,7 @@ import {
 } from './core/voice-service.js';
 import {
     renderCardVoiceControls,
-    renderModalVoiceControls,
-    updateVoiceButtonState,
-    updateVoiceStatusIndicator
+    renderModalVoiceControls
 } from './ui/voice-render.js';
 
 const state = {
@@ -129,6 +127,18 @@ let currentGeneratedImage = null;
 
 // 主题名称以 cards.js 的 categories 为唯一真源（不再从 HTML 按钮文案反推）
 const categoryNames = Object.fromEntries(categories.map((c) => [c.id, c.name]));
+
+/**
+ * 生成记录 id
+ * Date.now() 在同一毫秒内保存两条会撞车，改为 UUID（不支持时退回随机后缀）
+ * @returns {string}
+ */
+function createRecordId() {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+    }
+    return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
 
 function getSavedAnswerForCurrentCard() {
     if (!state.currentCard) return '';
@@ -357,6 +367,15 @@ function showConfirm(message) {
     });
 }
 
+/**
+ * 停止正在进行的朗读（换一张卡时不能继续念上一节）
+ */
+function stopReading() {
+    if (!state.voice.isReading) return;
+    if (state.voice.synthesizer) state.voice.synthesizer.cancel();
+    state.voice.isReading = false;
+}
+
 function drawCard() {
     const filtered = filterCards(cards, state.currentCategory);
 
@@ -365,6 +384,7 @@ function drawCard() {
         return;
     }
 
+    stopReading();
     state.currentCard = drawRandomCard(filtered);
     refreshCardView();
     elements.cardContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -400,7 +420,7 @@ function saveAnswer() {
     }
 
     const historyItem = {
-        id: Date.now(),
+        id: createRecordId(),
         timestamp: new Date().toLocaleString('zh-CN'),
         card: state.currentCard,
         answer,
@@ -680,7 +700,7 @@ function handleShareLink() {
         // 如果有回答，添加到历史中
         if (shareData.answer) {
             const historyItem = {
-                id: Date.now(),
+                id: createRecordId(),
                 timestamp: new Date(shareData.timestamp || Date.now()).toLocaleString('zh-CN'),
                 card: card,
                 answer: shareData.answer,
@@ -938,6 +958,7 @@ function handleNextVerse() {
         showToast('暂时取不到今日经文', 'error');
         return;
     }
+    stopReading();
     state.currentCard = verse;
     initTodayVerse();
     showToast('已换一句', 'success');
@@ -970,6 +991,13 @@ function handleReadAloud() {
         return;
     }
 
+    // 读经文原文；手记卡没有 text 时才退回引导语
+    const verseText = state.currentCard.text || state.currentCard.question || '';
+    if (!verseText) {
+        showToast('这节经文没有可朗读的内容', 'error');
+        return;
+    }
+
     // 如果正在朗读，则停止
     if (state.voice.isReading) {
         state.voice.synthesizer.cancel();
@@ -992,7 +1020,7 @@ function handleReadAloud() {
         disabled: false
     });
 
-    state.voice.synthesizer.speak(state.currentCard.question, {
+    state.voice.synthesizer.speak(verseText, {
         rate: 0.9,
         pitch: 1.0,
         onEnd: () => {

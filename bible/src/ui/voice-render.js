@@ -17,9 +17,9 @@ export function createReadAloudButton(options = {}) {
     const button = document.createElement('button');
     button.className = `voice-btn voice-read-btn ${isActive ? 'active' : ''}`;
     button.setAttribute('type', 'button');
-    button.setAttribute('aria-label', isActive ? '停止朗读' : '朗读问题');
+    button.setAttribute('aria-label', isActive ? '停止朗读' : '朗读经文');
     button.setAttribute('aria-pressed', String(isActive));
-    button.setAttribute('title', isActive ? '点击停止朗读' : '点击朗读问题');
+    button.setAttribute('title', isActive ? '点击停止朗读' : '点击朗读经文');
     button.disabled = disabled;
 
     // 图标
@@ -34,13 +34,7 @@ export function createReadAloudButton(options = {}) {
     labelSpan.textContent = isActive ? '停止' : '朗读';
     button.appendChild(labelSpan);
 
-    // 键盘无障碍支持
-    button.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            if (onClick) onClick();
-        }
-    });
+    // 原生 button 已处理 Enter / 空格，不要再自己监听 keydown，否则会触发两次
 
     // 点击事件
     if (onClick) {
@@ -84,13 +78,7 @@ export function createVoiceInputButton(options = {}) {
         button.appendChild(labelSpan);
     }
 
-    // 键盘无障碍支持
-    button.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            if (onClick) onClick();
-        }
-    });
+    // 原生 button 已处理 Enter / 空格，不要再自己监听 keydown，否则会触发两次
 
     // 点击事件
     if (onClick) {
@@ -183,12 +171,12 @@ export function updateVoiceButtonState(button, options = {}) {
     // 更新标题
     button.setAttribute('title', isActive
         ? (type === 'read' ? '点击停止朗读' : '点击停止录音')
-        : (type === 'read' ? '点击朗读问题' : '点击开始语音输入')
+        : (type === 'read' ? '点击朗读经文' : '点击开始语音输入')
     );
 
     button.setAttribute('aria-label', isActive
         ? (type === 'read' ? '停止朗读' : '停止语音输入')
-        : (type === 'read' ? '朗读问题' : '开始语音输入')
+        : (type === 'read' ? '朗读经文' : '开始语音输入')
     );
 }
 

@@ -4,17 +4,9 @@
  */
 
 import { STORAGE_KEYS } from './storage-migration.js';
+import { getLocalDateString, parseLocalDateString } from './date-utils.js';
 
 const CHECKIN_KEY = STORAGE_KEYS.checkIn;
-
-/**
- * 获取日期字符串 (YYYY-MM-DD)
- * @param {Date} date
- * @returns {string}
- */
-function getDateString(date) {
-    return date.toISOString().split('T')[0];
-}
 
 /**
  * 加载打卡数据
@@ -60,21 +52,21 @@ export function isTodayCheckedIn(checkInData) {
     if (!checkInData || !checkInData.lastDate) {
         return false;
     }
-    const today = getDateString(new Date());
+    const today = getLocalDateString();
     return checkInData.lastDate === today;
 }
 
 /**
  * 计算两个日期之间的天数差
+ * 两个日期都按本地零点解析，避免时区/夏令时导致的 23/25 小时问题
  * @param {string} dateStr1 - YYYY-MM-DD
  * @param {string} dateStr2 - YYYY-MM-DD
  * @returns {number}
  */
 function daysBetween(dateStr1, dateStr2) {
-    const d1 = new Date(dateStr1);
-    const d2 = new Date(dateStr2);
-    const diffTime = Math.abs(d2 - d1);
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const d1 = parseLocalDateString(dateStr1);
+    const d2 = parseLocalDateString(dateStr2);
+    return Math.round(Math.abs(d2 - d1) / (1000 * 60 * 60 * 24));
 }
 
 /**
@@ -84,7 +76,7 @@ function daysBetween(dateStr1, dateStr2) {
  */
 export function doCheckIn() {
     const data = loadCheckInData();
-    const today = getDateString(new Date());
+    const today = getLocalDateString();
 
     // 今天已打卡，直接返回
     if (data.lastDate === today) {
@@ -155,7 +147,8 @@ export function getMonthlyCheckInCount() {
     const currentYear = now.getFullYear();
 
     return data.dates.filter(dateStr => {
-        const date = new Date(dateStr);
+        const date = parseLocalDateString(dateStr);
+        if (Number.isNaN(date.getTime())) return false;
         return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
     }).length;
 }
@@ -173,7 +166,7 @@ export function getRecentCheckInStatus(days = 7) {
     for (let i = days - 1; i >= 0; i--) {
         const date = new Date(now);
         date.setDate(date.getDate() - i);
-        const dateStr = getDateString(date);
+        const dateStr = getLocalDateString(date);
 
         result.push({
             date: dateStr,

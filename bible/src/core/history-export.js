@@ -3,6 +3,8 @@
  */
 
 import { generateHistoryStats } from './history-filter.js';
+import { getCardThemeId } from './card-service.js';
+import { getLocalDateString } from './date-utils.js';
 
 /**
  * 生成历史记录纪念册图片
@@ -47,12 +49,12 @@ export async function generateHistoryAlbumImage(history, categoryNames) {
                     color: #2e7d32;
                     margin: 0 0 15px 0;
                     font-weight: 700;
-                ">心语卡牌纪念册</h1>
+                ">圣经金句 · 灵修纪念册</h1>
                 <p style="
                     font-size: 18px;
                     color: #666;
                     margin: 0;
-                ">记录每一次心灵的对话</p>
+                ">记录每一次与神的相遇</p>
                 <p style="
                     font-size: 14px;
                     color: #999;
@@ -62,7 +64,7 @@ export async function generateHistoryAlbumImage(history, categoryNames) {
 
             <!-- 统计概览 -->
             <div style="margin-bottom: 40px; padding: 25px; background: #f8f9fa; border-radius: 15px;">
-                <h2 style="font-size: 24px; color: #333; margin: 0 0 20px 0;">📊 对话统计</h2>
+                <h2 style="font-size: 24px; color: #333; margin: 0 0 20px 0;">📊 灵修统计</h2>
                 <div style="display: flex; gap: 30px; flex-wrap: wrap;">
                     <div style="text-align: center;">
                         <div style="font-size: 36px; font-weight: bold; color: #2e7d32;">${stats.totalCount}</div>
@@ -71,7 +73,7 @@ export async function generateHistoryAlbumImage(history, categoryNames) {
                     ${Object.entries(stats.byCategory).map(([cat, count]) => `
                         <div style="text-align: center;">
                             <div style="font-size: 28px; font-weight: bold; color: #4caf50;">${count}</div>
-                            <div style="font-size: 14px; color: #666;">${categoryNames[cat] || cat}</div>
+                            <div style="font-size: 14px; color: #666;">${cat === 'note' ? '手记' : (categoryNames[cat] || cat)}</div>
                         </div>
                     `).join('')}
                 </div>
@@ -87,7 +89,9 @@ export async function generateHistoryAlbumImage(history, categoryNames) {
         const card = item.card || {};
         // 主题名与配色都按英文 id 取（card.category 是中文，只作显示回退）
         const themeId = getCardThemeId(card);
-        const categoryName = categoryNames[themeId] || card.category || '';
+        const categoryName = themeId === 'note'
+            ? '手记'
+            : (categoryNames[themeId] || card.category || '');
         
         albumHTML += `
             <div style="
@@ -193,7 +197,7 @@ export async function generateHistoryAlbumImage(history, categoryNames) {
  */
 export function downloadAlbumImage(dataUrl) {
     const link = document.createElement('a');
-    link.download = `圣经金句灵修记录_${new Date().toISOString().slice(0, 10)}.png`;
+    link.download = `圣经金句灵修记录_${getLocalDateString()}.png`;
     link.href = dataUrl;
     link.click();
 }
@@ -201,7 +205,6 @@ export function downloadAlbumImage(dataUrl) {
 /**
  * 生成并下载PDF纪念册
  * @param {Array} history - 历史记录数组
- * @param {Object} categoryNames - 类别名称映射
  * @param {Object} categoryNames - 主题名称映射
  */
 export async function generatePDFAlbum(history, categoryNames) {
@@ -237,7 +240,8 @@ function getCategoryColor(category) {
         strength: '#F39C12',
         wisdom: '#1ABC9C',
         forgiveness: '#3498DB',
-        hope: '#E67E22'
+        hope: '#E67E22',
+        note: '#1ABC9C'
     };
     return colors[category] || '#4caf50';
 }
