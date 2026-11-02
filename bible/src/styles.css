@@ -361,6 +361,7 @@ header p {
 
 .history-section h3 {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
@@ -814,6 +815,37 @@ header p {
     border-left-color: var(--success);
 }
 
+/* 带「撤销」按钮的提示（删除 / 清空） */
+.toast-with-action {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-left-color: var(--success);
+}
+
+.toast-with-action .toast-message {
+    flex: 1;
+    line-height: 1.4;
+}
+
+.toast-undo {
+    flex: none;
+    padding: 4px 12px;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.toast-undo:hover {
+    background: rgba(95, 60, 25, 0.1);
+}
+
 .toast.toast-hide {
     animation: toast-out 0.18s ease forwards;
 }
@@ -1168,6 +1200,10 @@ header p {
     background: #32281f;
     border-color: #6a523b;
     color: #f3dfc8;
+}
+
+:root[data-theme='dark'] .toast-undo:hover {
+    background: rgba(243, 223, 200, 0.12);
 }
 
 /* ==================== 分享卡片图片样式 - 绿色生命力风格 ==================== */

@@ -2,12 +2,45 @@ import { STORAGE_KEYS } from './storage-migration.js';
 
 const HISTORY_KEY = STORAGE_KEYS.history;
 
+/**
+ * 生成记录 id，供早期没有 id 的数据补全
+ * @returns {string}
+ */
+function createRecordId() {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+    }
+    return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 export function loadHistory() {
     try {
         const raw = localStorage.getItem(HISTORY_KEY);
         if (!raw) return [];
         const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? parsed : [];
+        if (!Array.isArray(parsed)) return [];
+
+        // 旧数据可能缺 id：没有 id 时删除会按 undefined 匹配，误删所有无 id
+        // 记录；这里补全并过滤掉非对象条目，变化后立刻写回。
+        let changed = false;
+        const history = [];
+        parsed.forEach((item) => {
+            if (!item || typeof item !== 'object' || Array.isArray(item)) {
+                changed = true;
+                return;
+            }
+            if (item.id === undefined || item.id === null || String(item.id) === '') {
+                changed = true;
+                history.push({ ...item, id: createRecordId() });
+                return;
+            }
+            history.push(item);
+        });
+
+        if (changed) {
+            saveHistory(history);
+        }
+        return history;
     } catch {
         return [];
     }

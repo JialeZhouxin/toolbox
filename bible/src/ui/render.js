@@ -234,24 +234,29 @@ export function renderHistoryFilters({ container, categoryNames, onFilterChange 
  * @param {Object} params - 参数对象
  * @param {HTMLElement} params.container - 容器元素
  * @param {Function} params.onExportJSON - 导出JSON回调
+ * @param {Function} params.onImportJSON - 导入JSON回调
  * @param {Function} params.onExportImage - 导出图片回调
  * @param {Function} params.onExportAlbum - 导出纪念册回调
  * @param {Function} params.onShowStats - 显示统计回调
  * @param {Function} params.onShowReport - 显示报告回调
  */
-export function renderExportControls({ container, onExportJSON, onExportImage, onExportAlbum, onShowStats, onShowReport }) {
+export function renderExportControls({ container, onExportJSON, onImportJSON, onExportImage, onExportAlbum, onShowStats, onShowReport }) {
     container.replaceChildren();
-    
+
     const wrapper = createElement('div', 'export-controls');
-    
-    const exportBtn = createElement('button', 'btn btn-secondary export-btn', '📤 导出');
-    exportBtn.title = '导出历史记录';
-    
+
+    const exportBtn = createElement('button', 'btn btn-secondary export-btn', '📤 导出/导入');
+    exportBtn.title = '导出或导入历史记录';
+
     const dropdown = createElement('div', 'export-dropdown');
     dropdown.style.display = 'none';
-    
+
     const jsonOption = createElement('div', 'export-option', '📄 导出为 JSON');
     jsonOption.dataset.exportType = 'json';
+
+    const importOption = createElement('div', 'export-option export-option-import', '📥 导入 JSON');
+    importOption.dataset.exportType = 'import';
+    importOption.title = '从导出的 JSON 文件恢复或合并记录';
     
     const imageOption = createElement('div', 'export-option', '🖼️ 导出为图片');
     imageOption.dataset.exportType = 'image';
@@ -266,6 +271,7 @@ export function renderExportControls({ container, onExportJSON, onExportImage, o
     reportOption.dataset.exportType = 'report';
     
     dropdown.appendChild(jsonOption);
+    dropdown.appendChild(importOption);
     dropdown.appendChild(imageOption);
     dropdown.appendChild(albumOption);
     dropdown.appendChild(statsOption);
@@ -291,6 +297,12 @@ export function renderExportControls({ container, onExportJSON, onExportImage, o
     if (onExportJSON) {
         jsonOption.addEventListener('click', () => {
             onExportJSON();
+            dropdown.style.display = 'none';
+        });
+    }
+    if (onImportJSON) {
+        importOption.addEventListener('click', () => {
+            onImportJSON();
             dropdown.style.display = 'none';
         });
     }

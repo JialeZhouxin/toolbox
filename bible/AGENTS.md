@@ -15,6 +15,7 @@
   - `date-utils.js` 本地时区日期格式化与时间戳解析（打卡/统计/今日经文共用）
   - `history-store.js` 灵修记录读写
   - `history-filter.js` 记录筛选与导出
+  - `history-import.js` 记录导入解析与合并去重
   - `history-export.js` 分享图生成
   - `check-in.js` 打卡与连续天数
   - `stats.js` 统计计算

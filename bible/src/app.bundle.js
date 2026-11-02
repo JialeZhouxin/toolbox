@@ -3,7 +3,7 @@
  *
  * 用途：file:// 直接打开 index.html 时加载（此协议下不能用 ES modules）。
  * 生成：node scripts/build-bundle.js
- * 模块顺序（19 个）： src/data/cards.js, src/core/card-service.js, src/core/storage-migration.js, src/core/history-store.js, src/core/date-utils.js, src/core/history-filter.js, src/core/history-export.js, src/ui/render.js, src/core/stats.js, src/core/check-in.js, src/ui/stats-render.js, src/core/daily-verse-service.js, src/ui/daily-verse-render.js, src/core/verse-search-service.js, src/data/book-names.js, src/ui/verse-note-render.js, src/core/voice-service.js, src/ui/voice-render.js, src/main.js
+ * 模块顺序（20 个）： src/data/cards.js, src/core/card-service.js, src/core/storage-migration.js, src/core/history-store.js, src/core/date-utils.js, src/core/history-filter.js, src/core/history-import.js, src/core/history-export.js, src/ui/render.js, src/core/stats.js, src/core/check-in.js, src/ui/stats-render.js, src/core/daily-verse-service.js, src/ui/daily-verse-render.js, src/core/verse-search-service.js, src/data/book-names.js, src/ui/verse-note-render.js, src/core/voice-service.js, src/ui/voice-render.js, src/main.js
  * 未打包（体积大 / 动态 import）： src/data/bible-full.js
  */
 
@@ -10257,12 +10257,45 @@ function migrateLegacyStorage() {
 // ==================== src/core/history-store.js ====================
 const HISTORY_KEY = STORAGE_KEYS.history;
 
+/**
+ * 生成记录 id，供早期没有 id 的数据补全
+ * @returns {string}
+ */
+function createRecordId() {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+    }
+    return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 function loadHistory() {
     try {
         const raw = localStorage.getItem(HISTORY_KEY);
         if (!raw) return [];
         const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? parsed : [];
+        if (!Array.isArray(parsed)) return [];
+
+        // 旧数据可能缺 id：没有 id 时删除会按 undefined 匹配，误删所有无 id
+        // 记录；这里补全并过滤掉非对象条目，变化后立刻写回。
+        let changed = false;
+        const history = [];
+        parsed.forEach((item) => {
+            if (!item || typeof item !== 'object' || Array.isArray(item)) {
+                changed = true;
+                return;
+            }
+            if (item.id === undefined || item.id === null || String(item.id) === '') {
+                changed = true;
+                history.push({ ...item, id: createRecordId() });
+                return;
+            }
+            history.push(item);
+        });
+
+        if (changed) {
+            saveHistory(history);
+        }
+        return history;
     } catch {
         return [];
     }
@@ -10555,6 +10588,228 @@ function generateHistoryStats(history) {
     });
 
     return stats;
+}
+
+// ==================== src/core/history-import.js ====================
+/**
+ * 灵修记录 JSON 导入
+ *
+ * 支持的格式：
+ * 1. 本工具导出的 { exportDate, totalCount, records: [...] }
+ * 2. 直接一份记录数组 [...]
+ *
+ * 导入是「合并」而不是「覆盖」：同 id，或时间 + 出处 + 感受完全相同，
+ * 视为同一条记录并跳过，因此同一文件重复导入是安全的。
+ */
+
+const VALID_SOURCES = new Set(['draw', 'daily', 'note']);
+
+const CARD_FIELDS = [
+    'id',
+    'category',
+    'categoryEn',
+    'reference',
+    'text',
+    'question',
+    'level',
+    'book',
+    'chapter',
+    'verse',
+    'sourceHint',
+    'isDailyVerse',
+    'isDailyCard'
+];
+
+/**
+ * 生成记录 id，供缺少 id 的旧数据使用
+ * @returns {string}
+ */
+function createId() {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+    }
+    return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+/**
+ * 只保留已知的经文卡字段，避免把任意 JSON 字段带进存储
+ * @param {*} raw
+ * @returns {Object}
+ */
+function normalizeCard(raw) {
+    const card = {};
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return card;
+
+    CARD_FIELDS.forEach((key) => {
+        const value = raw[key];
+        if (value !== undefined && value !== null) {
+            card[key] = value;
+        }
+    });
+    return card;
+}
+
+/**
+ * 把一条原始记录规范成可存储的结构；缺少感受的记录视为无效
+ * @param {*} raw
+ * @returns {Object|null}
+ */
+function normalizeRecord(raw) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+
+    const answer = typeof raw.answer === 'string' ? raw.answer.trim() : '';
+    if (!answer) return null;
+
+    const card = normalizeCard(raw.card);
+    // 兼容「经文信息直接写在记录顶层」的手工 JSON
+    if (!card.reference && typeof raw.reference === 'string') {
+        card.reference = raw.reference;
+    }
+    if (!card.text && typeof raw.text === 'string') {
+        card.text = raw.text;
+    }
+
+    let timestamp;
+    if (typeof raw.timestamp === 'number' && Number.isFinite(raw.timestamp)) {
+        timestamp = new Date(raw.timestamp).toLocaleString('zh-CN');
+    } else if (typeof raw.timestamp === 'string' && raw.timestamp.trim()) {
+        timestamp = raw.timestamp.trim();
+    } else {
+        timestamp = new Date().toLocaleString('zh-CN');
+    }
+
+    const rawSource = typeof raw.source === 'string' ? raw.source : '';
+    const source = VALID_SOURCES.has(rawSource)
+        ? rawSource
+        : (card.category === 'note' ? 'note' : 'draw');
+
+    const id = (typeof raw.id === 'string' || typeof raw.id === 'number')
+        && String(raw.id).trim()
+        ? String(raw.id)
+        : createId();
+
+    const record = {
+        id,
+        timestamp,
+        card,
+        answer,
+        source
+    };
+    if (typeof raw.updatedAt === 'string' && raw.updatedAt.trim()) {
+        record.updatedAt = raw.updatedAt.trim();
+    }
+    return record;
+}
+
+/**
+ * 解析导入文件
+ * @param {string} text - 文件内容
+ * @returns {{ records: Array, invalid: number }}
+ * @throws {Error} 文件不是 JSON、结构不受支持或没有一条有效记录
+ */
+function parseHistoryJSON(text) {
+    let data;
+    try {
+        data = JSON.parse(text);
+    } catch {
+        throw new Error('文件不是有效的 JSON 格式');
+    }
+
+    const list = Array.isArray(data)
+        ? data
+        : (data && Array.isArray(data.records) ? data.records : null);
+    if (!list) {
+        throw new Error('JSON 结构不受支持：应为记录数组，或包含 records 数组的导出文件');
+    }
+    if (!list.length) {
+        throw new Error('文件中没有记录');
+    }
+
+    const records = [];
+    let invalid = 0;
+    list.forEach((raw) => {
+        const record = normalizeRecord(raw);
+        if (record) {
+            records.push(record);
+        } else {
+            invalid++;
+        }
+    });
+
+    if (!records.length) {
+        throw new Error(`文件中的 ${list.length} 条记录都缺少必要字段（至少需要 answer）`);
+    }
+    return { records, invalid };
+}
+
+/**
+ * 用于判断「同一条记录」的内容指纹
+ * @param {Object} item
+ * @returns {string}
+ */
+function contentKey(item) {
+    const card = (item && item.card) || {};
+    return [
+        String((item && item.timestamp) || ''),
+        String(card.reference || ''),
+        String((item && item.answer) || '')
+    ].join('\u0000');
+}
+
+/**
+ * 合并导入记录，按时间倒序排列
+ *
+ * @param {Array} existing - 现有记录
+ * @param {Array} incoming - 待导入记录
+ * @returns {{ history: Array, added: number, skipped: number }}
+ */
+function mergeHistory(existing, incoming) {
+    const base = Array.isArray(existing) ? existing : [];
+    const list = Array.isArray(incoming) ? incoming : [];
+
+    const seenIds = new Set();
+    const seenKeys = new Set();
+    const remember = (item) => {
+        if (!item || typeof item !== 'object') return;
+        if (item.id) seenIds.add(String(item.id));
+        seenKeys.add(contentKey(item));
+    };
+
+    base.forEach(remember);
+
+    const added = [];
+    let skipped = 0;
+
+    list.forEach((item) => {
+        if (!item) {
+            skipped++;
+            return;
+        }
+        const id = item.id ? String(item.id) : '';
+        if ((id && seenIds.has(id)) || seenKeys.has(contentKey(item))) {
+            skipped++;
+            return;
+        }
+        remember(item);
+        added.push(item);
+    });
+
+    // 新记录在前；时间戳无法解析的记录排最后，保持原相对顺序
+    const entries = [...base, ...added].map((item, index) => {
+        const date = parseTimestamp(item.timestamp);
+        return {
+            item,
+            index,
+            time: Number.isNaN(date.getTime()) ? -Infinity : date.getTime()
+        };
+    });
+    entries.sort((a, b) => (b.time - a.time) || (a.index - b.index));
+
+    return {
+        history: entries.map((entry) => entry.item),
+        added: added.length,
+        skipped
+    };
 }
 
 // ==================== src/core/history-export.js ====================
@@ -11057,24 +11312,29 @@ function renderHistoryFilters({ container, categoryNames, onFilterChange }) {
  * @param {Object} params - 参数对象
  * @param {HTMLElement} params.container - 容器元素
  * @param {Function} params.onExportJSON - 导出JSON回调
+ * @param {Function} params.onImportJSON - 导入JSON回调
  * @param {Function} params.onExportImage - 导出图片回调
  * @param {Function} params.onExportAlbum - 导出纪念册回调
  * @param {Function} params.onShowStats - 显示统计回调
  * @param {Function} params.onShowReport - 显示报告回调
  */
-function renderExportControls({ container, onExportJSON, onExportImage, onExportAlbum, onShowStats, onShowReport }) {
+function renderExportControls({ container, onExportJSON, onImportJSON, onExportImage, onExportAlbum, onShowStats, onShowReport }) {
     container.replaceChildren();
-    
+
     const wrapper = createElement('div', 'export-controls');
-    
-    const exportBtn = createElement('button', 'btn btn-secondary export-btn', '📤 导出');
-    exportBtn.title = '导出历史记录';
-    
+
+    const exportBtn = createElement('button', 'btn btn-secondary export-btn', '📤 导出/导入');
+    exportBtn.title = '导出或导入历史记录';
+
     const dropdown = createElement('div', 'export-dropdown');
     dropdown.style.display = 'none';
-    
+
     const jsonOption = createElement('div', 'export-option', '📄 导出为 JSON');
     jsonOption.dataset.exportType = 'json';
+
+    const importOption = createElement('div', 'export-option export-option-import', '📥 导入 JSON');
+    importOption.dataset.exportType = 'import';
+    importOption.title = '从导出的 JSON 文件恢复或合并记录';
     
     const imageOption = createElement('div', 'export-option', '🖼️ 导出为图片');
     imageOption.dataset.exportType = 'image';
@@ -11089,6 +11349,7 @@ function renderExportControls({ container, onExportJSON, onExportImage, onExport
     reportOption.dataset.exportType = 'report';
     
     dropdown.appendChild(jsonOption);
+    dropdown.appendChild(importOption);
     dropdown.appendChild(imageOption);
     dropdown.appendChild(albumOption);
     dropdown.appendChild(statsOption);
@@ -11114,6 +11375,12 @@ function renderExportControls({ container, onExportJSON, onExportImage, onExport
     if (onExportJSON) {
         jsonOption.addEventListener('click', () => {
             onExportJSON();
+            dropdown.style.display = 'none';
+        });
+    }
+    if (onImportJSON) {
+        importOption.addEventListener('click', () => {
+            onImportJSON();
             dropdown.style.display = 'none';
         });
     }
@@ -13260,6 +13527,8 @@ const state = {
     },
     editingItem: null,
     pendingSource: null,
+    // 最近一次可撤销操作（删除单条 / 清空），同一时间只保留一个
+    pendingUndo: null,
     todayCard: null,
     voice: {
         isReading: false,
@@ -13272,7 +13541,9 @@ const state = {
 
 const UI_TIMING = {
     toastVisibleMs: 1800,
-    toastExitMs: 180
+    toastExitMs: 180,
+    undoVisibleMs: 6000,
+    clearUndoVisibleMs: 8000
 };
 
 const THEME_KEY = STORAGE_KEYS.theme;
@@ -13314,6 +13585,7 @@ const elements = {
     clearHistoryBtn: document.getElementById('clearHistoryBtn'),
     categoryFilters: document.getElementById('categoryFilters'),
     toastContainer: document.getElementById('toastContainer'),
+    importFileInput: document.getElementById('importFileInput'),
     confirmModal: document.getElementById('confirmModal'),
     confirmMessage: document.getElementById('confirmMessage'),
     confirmOkBtn: document.getElementById('confirmOkBtn'),
@@ -13450,18 +13722,41 @@ function saveEditedAnswer() {
 }
 
 async function handleDeleteHistoryItem(item) {
-    const confirmed = await showConfirm('确定要删除这条历史记录吗？此操作不可恢复。');
+    const confirmed = await showConfirm('确定要删除这条历史记录吗？删除后可在提示条中撤销。');
     if (!confirmed) return;
-    
+
+    const index = state.history.findIndex((entry) => entry.id === item.id);
+    if (index === -1) {
+        showToast('这条记录已不存在', 'error');
+        refreshHistoryView();
+        return;
+    }
+
     const newHistory = deleteHistoryItem(state.history, item.id);
     if (newHistory === null) {
         showToast('删除失败，请重试', 'error');
         return;
     }
-    
+
     state.history = newHistory;
     refreshHistoryView();
-    showToast('记录已删除', 'success');
+
+    showUndoToast('记录已删除', () => {
+        // 撤销期间可能又保存了新记录，按 id 去重后再插回原位置
+        if (state.history.some((entry) => entry.id === item.id)) {
+            return;
+        }
+        const restored = [...state.history];
+        const insertAt = Math.min(index, restored.length);
+        restored.splice(insertAt, 0, item);
+        if (!saveHistory(restored)) {
+            showToast('撤销失败：浏览器存储空间不足', 'error');
+            return;
+        }
+        state.history = restored;
+        refreshHistoryView();
+        showToast('已恢复删除的记录', 'success');
+    });
 }
 
 function handleExportJSON() {
@@ -13470,10 +13765,96 @@ function handleExportJSON() {
         showToast('没有可导出的记录', 'error');
         return;
     }
-    
+
     const jsonString = exportToJSON(filteredHistory);
     downloadJSON(jsonString);
     showToast('JSON文件已下载', 'success');
+}
+
+/**
+ * 打开文件选择框，选择要导入的 JSON
+ */
+function handleImportJSON() {
+    if (!elements.importFileInput) {
+        showToast('当前浏览器不支持文件导入', 'error');
+        return;
+    }
+    // 清空后重新选同一个文件也能触发 change
+    elements.importFileInput.value = '';
+    elements.importFileInput.click();
+}
+
+/**
+ * 读取文件文本
+ * @param {File} file
+ * @returns {Promise<string>}
+ */
+function readFileAsText(file) {
+    if (typeof file.text === 'function') {
+        return file.text();
+    }
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ''));
+        reader.onerror = () => reject(reader.error || new Error('读取文件失败'));
+        reader.readAsText(file, 'utf-8');
+    });
+}
+
+/**
+ * 导入 JSON：解析 → 与现有记录合并去重 → 保存
+ * @param {Event} event
+ */
+async function handleImportFileChange(event) {
+    const file = event.target.files && event.target.files[0];
+    event.target.value = '';
+    if (!file) return;
+
+    if (file.size > 20 * 1024 * 1024) {
+        showToast('文件过大，请确认是否选错了文件', 'error');
+        return;
+    }
+
+    let text;
+    try {
+        text = await readFileAsText(file);
+    } catch (error) {
+        console.error('读取导入文件失败:', error);
+        showToast('读取文件失败，请重试', 'error');
+        return;
+    }
+
+    // 有些编辑器保存的 JSON 带 BOM，JSON.parse 会直接报错
+    text = text.replace(/^\uFEFF/, '');
+
+    let parsed;
+    try {
+        parsed = parseHistoryJSON(text);
+    } catch (error) {
+        showToast(error.message || 'JSON 文件解析失败', 'error');
+        return;
+    }
+
+    const result = mergeHistory(state.history, parsed.records);
+    if (!result.added) {
+        showToast(`导入完成：${result.skipped} 条记录已存在，没有新增`, 'info', 4000);
+        return;
+    }
+
+    if (!saveHistory(result.history)) {
+        showToast('导入失败：浏览器存储空间不足或权限受限', 'error');
+        return;
+    }
+
+    state.history = result.history;
+    refreshHistoryView();
+
+    const invalidNote = parsed.invalid ? `，忽略 ${parsed.invalid} 条无效记录` : '';
+    showToast(
+        `导入成功：新增 ${result.added} 条，跳过重复 ${result.skipped} 条${invalidNote}`,
+        'success',
+        4000
+    );
 }
 
 async function handleExportImage() {
@@ -13533,8 +13914,10 @@ function setTheme(theme) {
     showToast(`\u5df2\u5207\u6362\u5230${THEME_LABELS[theme]}\u98ce\u683c\u3002`, 'success');
 }
 
-function showToast(message, type = 'info') {
-    const oldToasts = elements.toastContainer.querySelectorAll('.toast');
+function showToast(message, type = 'info', duration = UI_TIMING.toastVisibleMs) {
+    // 带「撤销」按钮的提示有自己的生命周期，不能被普通 toast 挤掉
+    const oldToasts = Array.from(elements.toastContainer.querySelectorAll('.toast'))
+        .filter((toast) => !toast.classList.contains('toast-with-action'));
     if (oldToasts.length >= 2) {
         oldToasts[0].remove();
     }
@@ -13549,7 +13932,71 @@ function showToast(message, type = 'info') {
         setTimeout(() => {
             toast.remove();
         }, UI_TIMING.toastExitMs);
-    }, UI_TIMING.toastVisibleMs);
+    }, duration);
+}
+
+/**
+ * 关掉当前还没到期的撤销提示——关掉即表示这次操作生效，不再可撤销
+ */
+function dismissPendingUndo() {
+    if (!state.pendingUndo) return;
+    state.pendingUndo.dismiss();
+    state.pendingUndo = null;
+}
+
+/**
+ * 显示带「撤销」按钮的提示
+ *
+ * 同一时间只保留最近一次可撤销操作，之前的操作到此为止；
+ * 超时或用户点了别处后提示消失，删除即不可再恢复。
+ *
+ * @param {string} message
+ * @param {Function} onUndo - 点击撤销时执行
+ * @param {number} [duration]
+ */
+function showUndoToast(message, onUndo, duration = UI_TIMING.undoVisibleMs) {
+    dismissPendingUndo();
+
+    const toast = document.createElement('div');
+    toast.className = 'toast toast-with-action';
+
+    const text = document.createElement('span');
+    text.className = 'toast-message';
+    text.textContent = message;
+
+    const undoBtn = document.createElement('button');
+    undoBtn.type = 'button';
+    undoBtn.className = 'toast-undo';
+    undoBtn.textContent = '撤销';
+
+    toast.appendChild(text);
+    toast.appendChild(undoBtn);
+    elements.toastContainer.appendChild(toast);
+
+    let settled = false;
+    let timer = null;
+
+    const finish = (shouldUndo) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        if (state.pendingUndo && state.pendingUndo.toast === toast) {
+            state.pendingUndo = null;
+        }
+        if (shouldUndo) {
+            toast.remove();
+            onUndo();
+            return;
+        }
+        toast.classList.add('toast-hide');
+        setTimeout(() => {
+            toast.remove();
+        }, UI_TIMING.toastExitMs);
+    };
+
+    timer = setTimeout(() => finish(false), duration);
+    undoBtn.addEventListener('click', () => finish(true));
+    state.pendingUndo = { toast, dismiss: () => finish(false) };
 }
 
 function showConfirm(message) {
@@ -13955,13 +14402,31 @@ function handleShareLink() {
 }
 
 async function clearHistory() {
-    const confirmed = await showConfirm('确定要清空所有历史记录吗？此操作不可恢复。');
+    if (!state.history.length) {
+        showToast('没有可清空的记录', 'info');
+        return;
+    }
+
+    const confirmed = await showConfirm('确定要清空所有历史记录吗？清空后可在提示条中撤销。');
     if (!confirmed) return;
 
+    // 之前那条「删除撤销」到此生效，清空后的撤销以整份快照为准
+    dismissPendingUndo();
+
+    const snapshot = state.history;
     state.history = [];
     clearHistoryStore();
     refreshHistoryView();
-    showToast('历史记录已清空。', 'success');
+
+    showUndoToast(`已清空 ${snapshot.length} 条记录`, () => {
+        if (!saveHistory(snapshot)) {
+            showToast('撤销失败：浏览器存储空间不足', 'error');
+            return;
+        }
+        state.history = snapshot;
+        refreshHistoryView();
+        showToast('已恢复全部记录', 'success');
+    }, UI_TIMING.clearUndoVisibleMs);
 }
 
 // ==================== 统计功能 ====================
@@ -14041,6 +14506,9 @@ function setupEventListeners() {
     elements.closeShareBtn.addEventListener('click', closeShareModal);
     elements.copyShareBtn.addEventListener('click', copyShareLink);
     elements.clearHistoryBtn.addEventListener('click', clearHistory);
+    if (elements.importFileInput) {
+        elements.importFileInput.addEventListener('change', handleImportFileChange);
+    }
     
     // 编辑模态框事件
     if (elements.confirmEditBtn) {
@@ -14439,6 +14907,7 @@ function init() {
         renderExportControls({
             container: elements.historyExportContainer,
             onExportJSON: handleExportJSON,
+            onImportJSON: handleImportJSON,
             onExportImage: handleExportImage,
             onExportAlbum: handleExportAlbum,
             onShowStats: openStatsModal

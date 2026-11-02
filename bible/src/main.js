@@ -2,6 +2,7 @@ import { cards, categories } from './data/cards.js';
 import { filterCards, drawRandomCard, getCardThemeId } from './core/card-service.js';
 import { loadHistory, saveHistory, clearHistoryStore, updateHistoryItem, deleteHistoryItem } from './core/history-store.js';
 import { filterHistory, exportToJSON, downloadJSON } from './core/history-filter.js';
+import { parseHistoryJSON, mergeHistory } from './core/history-import.js';
 import { generateHistoryAlbumImage, downloadAlbumImage } from './core/history-export.js';
 import { renderCard, renderHistory, renderHistoryFilters, renderExportControls } from './ui/render.js';
 import { renderFullStatsReport } from './ui/stats-render.js';
@@ -33,6 +34,8 @@ const state = {
     },
     editingItem: null,
     pendingSource: null,
+    // 最近一次可撤销操作（删除单条 / 清空），同一时间只保留一个
+    pendingUndo: null,
     todayCard: null,
     voice: {
         isReading: false,
@@ -45,7 +48,9 @@ const state = {
 
 const UI_TIMING = {
     toastVisibleMs: 1800,
-    toastExitMs: 180
+    toastExitMs: 180,
+    undoVisibleMs: 6000,
+    clearUndoVisibleMs: 8000
 };
 
 const THEME_KEY = STORAGE_KEYS.theme;
@@ -87,6 +92,7 @@ const elements = {
     clearHistoryBtn: document.getElementById('clearHistoryBtn'),
     categoryFilters: document.getElementById('categoryFilters'),
     toastContainer: document.getElementById('toastContainer'),
+    importFileInput: document.getElementById('importFileInput'),
     confirmModal: document.getElementById('confirmModal'),
     confirmMessage: document.getElementById('confirmMessage'),
     confirmOkBtn: document.getElementById('confirmOkBtn'),
@@ -223,18 +229,41 @@ function saveEditedAnswer() {
 }
 
 async function handleDeleteHistoryItem(item) {
-    const confirmed = await showConfirm('确定要删除这条历史记录吗？此操作不可恢复。');
+    const confirmed = await showConfirm('确定要删除这条历史记录吗？删除后可在提示条中撤销。');
     if (!confirmed) return;
-    
+
+    const index = state.history.findIndex((entry) => entry.id === item.id);
+    if (index === -1) {
+        showToast('这条记录已不存在', 'error');
+        refreshHistoryView();
+        return;
+    }
+
     const newHistory = deleteHistoryItem(state.history, item.id);
     if (newHistory === null) {
         showToast('删除失败，请重试', 'error');
         return;
     }
-    
+
     state.history = newHistory;
     refreshHistoryView();
-    showToast('记录已删除', 'success');
+
+    showUndoToast('记录已删除', () => {
+        // 撤销期间可能又保存了新记录，按 id 去重后再插回原位置
+        if (state.history.some((entry) => entry.id === item.id)) {
+            return;
+        }
+        const restored = [...state.history];
+        const insertAt = Math.min(index, restored.length);
+        restored.splice(insertAt, 0, item);
+        if (!saveHistory(restored)) {
+            showToast('撤销失败：浏览器存储空间不足', 'error');
+            return;
+        }
+        state.history = restored;
+        refreshHistoryView();
+        showToast('已恢复删除的记录', 'success');
+    });
 }
 
 function handleExportJSON() {
@@ -243,10 +272,96 @@ function handleExportJSON() {
         showToast('没有可导出的记录', 'error');
         return;
     }
-    
+
     const jsonString = exportToJSON(filteredHistory);
     downloadJSON(jsonString);
     showToast('JSON文件已下载', 'success');
+}
+
+/**
+ * 打开文件选择框，选择要导入的 JSON
+ */
+function handleImportJSON() {
+    if (!elements.importFileInput) {
+        showToast('当前浏览器不支持文件导入', 'error');
+        return;
+    }
+    // 清空后重新选同一个文件也能触发 change
+    elements.importFileInput.value = '';
+    elements.importFileInput.click();
+}
+
+/**
+ * 读取文件文本
+ * @param {File} file
+ * @returns {Promise<string>}
+ */
+function readFileAsText(file) {
+    if (typeof file.text === 'function') {
+        return file.text();
+    }
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ''));
+        reader.onerror = () => reject(reader.error || new Error('读取文件失败'));
+        reader.readAsText(file, 'utf-8');
+    });
+}
+
+/**
+ * 导入 JSON：解析 → 与现有记录合并去重 → 保存
+ * @param {Event} event
+ */
+async function handleImportFileChange(event) {
+    const file = event.target.files && event.target.files[0];
+    event.target.value = '';
+    if (!file) return;
+
+    if (file.size > 20 * 1024 * 1024) {
+        showToast('文件过大，请确认是否选错了文件', 'error');
+        return;
+    }
+
+    let text;
+    try {
+        text = await readFileAsText(file);
+    } catch (error) {
+        console.error('读取导入文件失败:', error);
+        showToast('读取文件失败，请重试', 'error');
+        return;
+    }
+
+    // 有些编辑器保存的 JSON 带 BOM，JSON.parse 会直接报错
+    text = text.replace(/^\uFEFF/, '');
+
+    let parsed;
+    try {
+        parsed = parseHistoryJSON(text);
+    } catch (error) {
+        showToast(error.message || 'JSON 文件解析失败', 'error');
+        return;
+    }
+
+    const result = mergeHistory(state.history, parsed.records);
+    if (!result.added) {
+        showToast(`导入完成：${result.skipped} 条记录已存在，没有新增`, 'info', 4000);
+        return;
+    }
+
+    if (!saveHistory(result.history)) {
+        showToast('导入失败：浏览器存储空间不足或权限受限', 'error');
+        return;
+    }
+
+    state.history = result.history;
+    refreshHistoryView();
+
+    const invalidNote = parsed.invalid ? `，忽略 ${parsed.invalid} 条无效记录` : '';
+    showToast(
+        `导入成功：新增 ${result.added} 条，跳过重复 ${result.skipped} 条${invalidNote}`,
+        'success',
+        4000
+    );
 }
 
 async function handleExportImage() {
@@ -306,8 +421,10 @@ function setTheme(theme) {
     showToast(`\u5df2\u5207\u6362\u5230${THEME_LABELS[theme]}\u98ce\u683c\u3002`, 'success');
 }
 
-function showToast(message, type = 'info') {
-    const oldToasts = elements.toastContainer.querySelectorAll('.toast');
+function showToast(message, type = 'info', duration = UI_TIMING.toastVisibleMs) {
+    // 带「撤销」按钮的提示有自己的生命周期，不能被普通 toast 挤掉
+    const oldToasts = Array.from(elements.toastContainer.querySelectorAll('.toast'))
+        .filter((toast) => !toast.classList.contains('toast-with-action'));
     if (oldToasts.length >= 2) {
         oldToasts[0].remove();
     }
@@ -322,7 +439,71 @@ function showToast(message, type = 'info') {
         setTimeout(() => {
             toast.remove();
         }, UI_TIMING.toastExitMs);
-    }, UI_TIMING.toastVisibleMs);
+    }, duration);
+}
+
+/**
+ * 关掉当前还没到期的撤销提示——关掉即表示这次操作生效，不再可撤销
+ */
+function dismissPendingUndo() {
+    if (!state.pendingUndo) return;
+    state.pendingUndo.dismiss();
+    state.pendingUndo = null;
+}
+
+/**
+ * 显示带「撤销」按钮的提示
+ *
+ * 同一时间只保留最近一次可撤销操作，之前的操作到此为止；
+ * 超时或用户点了别处后提示消失，删除即不可再恢复。
+ *
+ * @param {string} message
+ * @param {Function} onUndo - 点击撤销时执行
+ * @param {number} [duration]
+ */
+function showUndoToast(message, onUndo, duration = UI_TIMING.undoVisibleMs) {
+    dismissPendingUndo();
+
+    const toast = document.createElement('div');
+    toast.className = 'toast toast-with-action';
+
+    const text = document.createElement('span');
+    text.className = 'toast-message';
+    text.textContent = message;
+
+    const undoBtn = document.createElement('button');
+    undoBtn.type = 'button';
+    undoBtn.className = 'toast-undo';
+    undoBtn.textContent = '撤销';
+
+    toast.appendChild(text);
+    toast.appendChild(undoBtn);
+    elements.toastContainer.appendChild(toast);
+
+    let settled = false;
+    let timer = null;
+
+    const finish = (shouldUndo) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        if (state.pendingUndo && state.pendingUndo.toast === toast) {
+            state.pendingUndo = null;
+        }
+        if (shouldUndo) {
+            toast.remove();
+            onUndo();
+            return;
+        }
+        toast.classList.add('toast-hide');
+        setTimeout(() => {
+            toast.remove();
+        }, UI_TIMING.toastExitMs);
+    };
+
+    timer = setTimeout(() => finish(false), duration);
+    undoBtn.addEventListener('click', () => finish(true));
+    state.pendingUndo = { toast, dismiss: () => finish(false) };
 }
 
 function showConfirm(message) {
@@ -728,13 +909,31 @@ function handleShareLink() {
 }
 
 async function clearHistory() {
-    const confirmed = await showConfirm('确定要清空所有历史记录吗？此操作不可恢复。');
+    if (!state.history.length) {
+        showToast('没有可清空的记录', 'info');
+        return;
+    }
+
+    const confirmed = await showConfirm('确定要清空所有历史记录吗？清空后可在提示条中撤销。');
     if (!confirmed) return;
 
+    // 之前那条「删除撤销」到此生效，清空后的撤销以整份快照为准
+    dismissPendingUndo();
+
+    const snapshot = state.history;
     state.history = [];
     clearHistoryStore();
     refreshHistoryView();
-    showToast('历史记录已清空。', 'success');
+
+    showUndoToast(`已清空 ${snapshot.length} 条记录`, () => {
+        if (!saveHistory(snapshot)) {
+            showToast('撤销失败：浏览器存储空间不足', 'error');
+            return;
+        }
+        state.history = snapshot;
+        refreshHistoryView();
+        showToast('已恢复全部记录', 'success');
+    }, UI_TIMING.clearUndoVisibleMs);
 }
 
 // ==================== 统计功能 ====================
@@ -814,6 +1013,9 @@ function setupEventListeners() {
     elements.closeShareBtn.addEventListener('click', closeShareModal);
     elements.copyShareBtn.addEventListener('click', copyShareLink);
     elements.clearHistoryBtn.addEventListener('click', clearHistory);
+    if (elements.importFileInput) {
+        elements.importFileInput.addEventListener('change', handleImportFileChange);
+    }
     
     // 编辑模态框事件
     if (elements.confirmEditBtn) {
@@ -1212,6 +1414,7 @@ function init() {
         renderExportControls({
             container: elements.historyExportContainer,
             onExportJSON: handleExportJSON,
+            onImportJSON: handleImportJSON,
             onExportImage: handleExportImage,
             onExportAlbum: handleExportAlbum,
             onShowStats: openStatsModal
