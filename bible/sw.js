@@ -2,7 +2,7 @@
 /* CacheStorage 按 origin 共享，activate 只清理带本前缀的键，
    否则会把同站其它工具（heart-talk / premarital）的缓存一起删掉。 */
 const CACHE_PREFIX = "bible-";
-const CACHE = "bible-609dd930";
+const CACHE = "bible-edb6e493";
 const ASSETS = [
   "./",
   "./index.html",

@@ -102,17 +102,15 @@ export function renderTodayVerse({ container, verse, history = [], streak = 0, o
                     <div class="daily-card-badge">今日经文</div>
                     <div class="daily-verse-body">${escapeHtml(stripEditorialNotes(verse.text))}</div>
                     <div class="daily-verse-ref">—— ${escapeHtml(verse.reference)}</div>
-                    ${answered ? `
-                        <div class="daily-card-status answered">
-                            <span>✓ 今天已写下感受</span>
-                        </div>
-                    ` : `
-                        <div class="daily-card-actions">
+                    <div class="daily-card-actions">
+                        ${answered ? `
+                            <div class="daily-card-status answered">
+                                <span>✓ 今天已写下感受</span>
+                            </div>
+                        ` : `
                             <button class="btn" data-action="answer">✍️ 写下感受</button>
                             <button class="btn btn-secondary" data-action="next">🔄 换一句</button>
-                        </div>
-                    `}
-                    <div class="daily-card-actions">
+                        `}
                         <button class="btn btn-secondary" data-action="context">📖 查看上下文</button>
                     </div>
                 </div>

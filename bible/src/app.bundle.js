@@ -14665,8 +14665,6 @@ function normalizeReference(reference) {
  * 导入是「合并」而不是「覆盖」：同 id，或时间 + 出处 + 感受完全相同，
  * 视为同一条记录并跳过，因此同一文件重复导入是安全的。
  */
-
-
 const VALID_SOURCES = new Set(['draw', 'daily', 'note']);
 
 const CARD_FIELDS = [
@@ -16493,8 +16491,6 @@ function groupByBook(items) {
  *
  * 全本 3.3MB 复用检索页的按需加载，不新增数据文件。
  */
-
-
 /**
  * 取某节经文所在章的完整上下文
  *
@@ -16634,17 +16630,15 @@ function renderTodayVerse({ container, verse, history = [], streak = 0, onAnswer
                     <div class="daily-card-badge">今日经文</div>
                     <div class="daily-verse-body">${escapeHtml(stripEditorialNotes(verse.text))}</div>
                     <div class="daily-verse-ref">—— ${escapeHtml(verse.reference)}</div>
-                    ${answered ? `
-                        <div class="daily-card-status answered">
-                            <span>✓ 今天已写下感受</span>
-                        </div>
-                    ` : `
-                        <div class="daily-card-actions">
+                    <div class="daily-card-actions">
+                        ${answered ? `
+                            <div class="daily-card-status answered">
+                                <span>✓ 今天已写下感受</span>
+                            </div>
+                        ` : `
                             <button class="btn" data-action="answer">✍️ 写下感受</button>
                             <button class="btn btn-secondary" data-action="next">🔄 换一句</button>
-                        </div>
-                    `}
-                    <div class="daily-card-actions">
+                        `}
                         <button class="btn btn-secondary" data-action="context">📖 查看上下文</button>
                     </div>
                 </div>
@@ -16669,7 +16663,6 @@ function renderTodayVerse({ container, verse, history = [], streak = 0, onAnswer
  * 这里的经文保留〔…〕编者注——上下文场景下它们是有效信息
  * （诗篇标题、细拉等），与卡片正面的处理刻意不同。
  */
-
 /**
  * 转义 HTML
  * @param {string} text
