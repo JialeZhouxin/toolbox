@@ -10,6 +10,7 @@
 
 import { isTodayVerseAnswered } from '../core/daily-verse-service.js';
 import { getLocalDateString, parseTimestamp } from '../core/date-utils.js';
+import { stripEditorialNotes } from '../core/verse-text.js';
 
 const WEEKDAY_NAMES = ['日', '一', '二', '三', '四', '五', '六'];
 
@@ -68,8 +69,9 @@ function escapeHtml(text) {
  * @param {number} params.streak - 连续打卡天数
  * @param {Function} params.onAnswer - 点「写下感受」
  * @param {Function} params.onNext - 点「换一句」
+ * @param {Function} params.onContext - 点「查看上下文」
  */
-export function renderTodayVerse({ container, verse, history = [], streak = 0, onAnswer, onNext }) {
+export function renderTodayVerse({ container, verse, history = [], streak = 0, onAnswer, onNext, onContext }) {
     if (!container) return;
 
     if (!verse) {
@@ -98,7 +100,7 @@ export function renderTodayVerse({ container, verse, history = [], streak = 0, o
             <div class="daily-card-content">
                 <div class="daily-card-display ${answered ? 'answered' : ''}">
                     <div class="daily-card-badge">今日经文</div>
-                    <div class="daily-verse-body">${escapeHtml(verse.text)}</div>
+                    <div class="daily-verse-body">${escapeHtml(stripEditorialNotes(verse.text))}</div>
                     <div class="daily-verse-ref">—— ${escapeHtml(verse.reference)}</div>
                     ${answered ? `
                         <div class="daily-card-status answered">
@@ -110,6 +112,9 @@ export function renderTodayVerse({ container, verse, history = [], streak = 0, o
                             <button class="btn btn-secondary" data-action="next">🔄 换一句</button>
                         </div>
                     `}
+                    <div class="daily-card-actions">
+                        <button class="btn btn-secondary" data-action="context">📖 查看上下文</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -119,6 +124,7 @@ export function renderTodayVerse({ container, verse, history = [], streak = 0, o
         btn.addEventListener('click', () => {
             if (btn.dataset.action === 'answer' && onAnswer) onAnswer();
             if (btn.dataset.action === 'next' && onNext) onNext();
+            if (btn.dataset.action === 'context' && onContext) onContext();
         });
     });
 }

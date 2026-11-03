@@ -2,7 +2,7 @@
 /* CacheStorage 按 origin 共享，activate 只清理带本前缀的键，
    否则会把同站其它工具（heart-talk / premarital）的缓存一起删掉。 */
 const CACHE_PREFIX = "bible-";
-const CACHE = "bible-654bddef";
+const CACHE = "bible-609dd930";
 const ASSETS = [
   "./",
   "./index.html",
@@ -25,9 +25,13 @@ const ASSETS = [
   "./src/core/storage-migration.js",
   "./src/core/daily-verse-service.js",
   "./src/core/verse-search-service.js",
+  "./src/core/verse-text.js",
+  "./src/core/reference-utils.js",
+  "./src/core/verse-context-service.js",
   "./src/ui/render.js",
   "./src/ui/stats-render.js",
   "./src/ui/daily-verse-render.js",
+  "./src/ui/verse-context-render.js",
   "./src/ui/verse-note-render.js",
   "./src/ui/voice-render.js",
   "./vendor/html2canvas.min.js",

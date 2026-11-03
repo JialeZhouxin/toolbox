@@ -5,6 +5,7 @@
 import { generateHistoryStats } from './history-filter.js';
 import { getCardThemeId } from './card-service.js';
 import { getLocalDateString } from './date-utils.js';
+import { stripEditorialNotes } from './verse-text.js';
 
 /**
  * 生成历史记录纪念册图片
@@ -117,7 +118,7 @@ export async function generateHistoryAlbumImage(history, categoryNames) {
                     font-weight: 600;
                     margin-bottom: 10px;
                     line-height: 1.5;
-                ">${escapeHtml(card.text || '')}</div>
+                ">${escapeHtml(stripEditorialNotes(card.text || ''))}</div>
                 <div style="
                     font-size: 13px;
                     color: #8a7561;

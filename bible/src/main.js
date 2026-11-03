@@ -8,7 +8,11 @@ import { renderCard, renderHistory, renderHistoryFilters, renderExportControls }
 import { renderFullStatsReport } from './ui/stats-render.js';
 import { checkInOnSave, getStreakDays } from './core/check-in.js';
 import { getTodayVerse, nextTodayVerse } from './core/daily-verse-service.js';
+import { getVerseContext } from './core/verse-context-service.js';
+import { stripEditorialNotes } from './core/verse-text.js';
+import { normalizeReference } from './core/reference-utils.js';
 import { renderTodayVerse } from './ui/daily-verse-render.js';
+import { renderVerseContext } from './ui/verse-context-render.js';
 import { renderVerseNote } from './ui/verse-note-render.js';
 import { migrateLegacyStorage, STORAGE_KEYS } from './core/storage-migration.js';
 import {
@@ -70,12 +74,17 @@ const elements = {
     cardQuestion: document.getElementById('cardQuestion'),
     drawBtn: document.getElementById('drawBtn'),
     saveBtn: document.getElementById('saveBtn'),
+    contextBtn: document.getElementById('contextBtn'),
     shareBtn: document.getElementById('shareBtn'),
     historyList: document.getElementById('historyList'),
     historyFiltersContainer: document.getElementById('historyFiltersContainer'),
     historyExportContainer: document.getElementById('historyExportContainer'),
     saveModal: document.getElementById('saveModal'),
     shareModal: document.getElementById('shareModal'),
+    contextModal: document.getElementById('contextModal'),
+    contextModalTitle: document.getElementById('contextModalTitle'),
+    contextBody: document.getElementById('contextBody'),
+    closeContextBtn: document.getElementById('closeContextBtn'),
     editModal: document.getElementById('editModal'),
     saveModalQuestion: document.getElementById('saveModalQuestion'),
     answerInput: document.getElementById('answerInput'),
@@ -149,9 +158,12 @@ function createRecordId() {
 function getSavedAnswerForCurrentCard() {
     if (!state.currentCard) return '';
     const { id, reference } = state.currentCard;
-    // 精选池扩充后卡片 id 会重排，优先按经文出处匹配历史记录
+    // 精选池扩充后卡片 id 会重排，优先按经文出处匹配历史记录；
+    // 出处用归一化后的形式比对，兼容旧的繁体卷名（啟示录 → 启示录）
     const item = state.history.find((entry) => entry.card
-        && (reference ? entry.card.reference === reference : entry.card.id === id));
+        && (reference
+            ? normalizeReference(entry.card.reference) === normalizeReference(reference)
+            : entry.card.id === id));
     return item ? item.answer : '';
 }
 
@@ -190,7 +202,7 @@ function openEditModal(item) {
     state.editingItem = item;
     const card = item.card || {};
     elements.editModalQuestion.textContent = card.reference
-        ? `${card.reference}　${card.text || ''}`
+        ? `${card.reference}　${stripEditorialNotes(card.text)}`
         : (card.question || '');
     elements.editAnswerInput.value = item.answer;
     elements.editModal.classList.add('active');
@@ -575,7 +587,7 @@ function openSaveModal(source = 'draw') {
     if (!state.currentCard) return;
     state.pendingSource = source;
     elements.saveModalQuestion.textContent = state.currentCard.reference
-        ? `${state.currentCard.reference}　${state.currentCard.text || ''}`
+        ? `${state.currentCard.reference}　${stripEditorialNotes(state.currentCard.text)}`
         : (state.currentCard.question || '');
     elements.answerInput.value = '';
     elements.saveModal.classList.add('active');
@@ -634,7 +646,7 @@ function openShareModal() {
     if (!state.currentCard) return;
 
     elements.shareQuestion.textContent = state.currentCard.reference
-        ? `${state.currentCard.reference}　${state.currentCard.text || ''}`
+        ? `${state.currentCard.reference}　${stripEditorialNotes(state.currentCard.text)}`
         : (state.currentCard.question || '');
     const answer = getSavedAnswerForCurrentCard() || '（点击“写下感受”后可展示你的感受）';
     elements.shareAnswer.textContent = answer;
@@ -643,6 +655,62 @@ function openShareModal() {
 
 function closeShareModal() {
     elements.shareModal.classList.remove('active');
+}
+
+// ==================== 经文上下文 ====================
+
+// 防止快速切换时旧的异步结果覆盖新内容
+let contextRequestId = 0;
+
+/**
+ * 打开「查看上下文」弹层，显示该节所在整章
+ * @param {Object} [card] - 默认取当前卡牌
+ */
+async function openContextModal(card) {
+    const target = card || state.currentCard;
+    if (!target || !target.reference) {
+        showToast('这节经文没有可显示的上下文', 'error');
+        return;
+    }
+    if (!elements.contextModal) return;
+
+    const requestId = ++contextRequestId;
+    elements.contextModal.classList.add('active');
+    renderVerseContext({
+        container: elements.contextBody,
+        titleEl: elements.contextModalTitle,
+        reference: target.reference,
+        loading: true
+    });
+
+    try {
+        const context = await getVerseContext(target.reference);
+        if (requestId !== contextRequestId) return;
+        renderVerseContext({
+            container: elements.contextBody,
+            titleEl: elements.contextModalTitle,
+            reference: target.reference,
+            context
+        });
+    } catch (error) {
+        if (requestId !== contextRequestId) return;
+        const message = window.location.protocol === 'file:'
+            ? '以文件方式打开时无法加载全本经文，请通过本地服务器访问后再试'
+            : '暂时加载不了上下文，请联网后再试';
+        renderVerseContext({
+            container: elements.contextBody,
+            titleEl: elements.contextModalTitle,
+            reference: target.reference,
+            error: message
+        });
+    }
+}
+
+function closeContextModal() {
+    contextRequestId++;
+    if (elements.contextModal) {
+        elements.contextModal.classList.remove('active');
+    }
 }
 
 function fallbackCopy(text) {
@@ -669,7 +737,7 @@ async function copyShareLink() {
     if (!state.currentCard) return;
 
     const verse = state.currentCard.reference
-        ? `${state.currentCard.text}\n—— ${state.currentCard.reference}`
+        ? `${stripEditorialNotes(state.currentCard.text)}\n—— ${state.currentCard.reference}`
         : (state.currentCard.question || '');
     const text = `圣经金句\n\n${verse}\n\n来自圣经金句`;
 
@@ -712,7 +780,7 @@ async function generateShareImage() {
 
         // 更新分享卡片模板内容
         elements.shareCardCategory.textContent = categoryNames[getCardThemeId(state.currentCard)] || state.currentCard.category || '';
-        elements.shareCardQuestion.textContent = state.currentCard.text || state.currentCard.question || '';
+        elements.shareCardQuestion.textContent = stripEditorialNotes(state.currentCard.text) || state.currentCard.question || '';
         const shareRefEl = document.getElementById('shareCardRef');
         if (shareRefEl) shareRefEl.textContent = state.currentCard.reference ? `—— ${state.currentCard.reference}` : '';
 
@@ -889,7 +957,9 @@ function handleShareLink() {
             };
 
             // 检查是否已存在相同经文的感受
-            const existingIndex = state.history.findIndex(h => (h.card || {}).reference === card.reference);
+            const existingIndex = state.history.findIndex(
+                (h) => normalizeReference((h.card || {}).reference) === normalizeReference(card.reference)
+            );
             if (existingIndex === -1) {
                 state.history.unshift(historyItem);
                 saveHistory(state.history);
@@ -1007,6 +1077,9 @@ function setActiveFilterButton(container, target) {
 function setupEventListeners() {
     elements.drawBtn.addEventListener('click', drawCard);
     elements.saveBtn.addEventListener('click', () => openSaveModal('draw'));
+    if (elements.contextBtn) {
+        elements.contextBtn.addEventListener('click', () => openContextModal());
+    }
     elements.shareBtn.addEventListener('click', openShareModal);
     elements.confirmSaveBtn.addEventListener('click', saveAnswer);
     elements.cancelSaveBtn.addEventListener('click', closeSaveModal);
@@ -1075,6 +1148,15 @@ function setupEventListeners() {
         if (event.target === elements.shareModal) closeShareModal();
     });
 
+    if (elements.closeContextBtn) {
+        elements.closeContextBtn.addEventListener('click', closeContextModal);
+    }
+    if (elements.contextModal) {
+        elements.contextModal.addEventListener('click', (event) => {
+            if (event.target === elements.contextModal) closeContextModal();
+        });
+    }
+
     // 统计功能事件监听
     if (elements.statsBtn) {
         elements.statsBtn.addEventListener('click', openStatsModal);
@@ -1128,13 +1210,15 @@ function closeVerseNoteModal() {
 function initTodayVerse() {
     if (!elements.dailyCardContainer) return;
 
+    const verse = getTodayVerse(cards);
     renderTodayVerse({
         container: elements.dailyCardContainer,
-        verse: getTodayVerse(cards),
+        verse,
         history: state.history,
         streak: getStreakDays(),
         onAnswer: () => openTodayVerseSave(),
-        onNext: () => handleNextVerse()
+        onNext: () => handleNextVerse(),
+        onContext: () => openContextModal(verse)
     });
 }
 
@@ -1194,7 +1278,7 @@ function handleReadAloud() {
     }
 
     // 读经文原文；手记卡没有 text 时才退回引导语
-    const verseText = state.currentCard.text || state.currentCard.question || '';
+    const verseText = stripEditorialNotes(state.currentCard.text) || state.currentCard.question || '';
     if (!verseText) {
         showToast('这节经文没有可朗读的内容', 'error');
         return;

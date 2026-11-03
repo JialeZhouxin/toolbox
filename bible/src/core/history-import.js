@@ -10,6 +10,7 @@
  */
 
 import { parseTimestamp } from './date-utils.js';
+import { normalizeReference } from './reference-utils.js';
 
 const VALID_SOURCES = new Set(['draw', 'daily', 'note']);
 
@@ -160,7 +161,7 @@ function contentKey(item) {
     const card = (item && item.card) || {};
     return [
         String((item && item.timestamp) || ''),
-        String(card.reference || ''),
+        normalizeReference(card.reference),
         String((item && item.answer) || '')
     ].join('\u0000');
 }

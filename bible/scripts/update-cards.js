@@ -39,6 +39,55 @@ const categoryColors = {
     hope: '#E67E22'
 };
 
+// 历史数据里的繁简/异写卷名 → 标准名（与 src/core/reference-utils.js 保持一致）
+const BOOK_NAME_ALIASES = {
+    啟示录: '启示录'
+};
+
+function normalizeBookName(book) {
+    const trimmed = String(book || '').trim();
+    return BOOK_NAME_ALIASES[trimmed] || trimmed;
+}
+
+/**
+ * 解析出处，同时产出结构化字段；解析失败直接抛错，避免脏数据进池
+ * @param {string} reference
+ * @returns {{book:string, chapter:number, verseStart:number, verseEnd:number}}
+ */
+function parseReference(reference) {
+    const match = String(reference || '').trim()
+        .match(/^(.+?)\s*(\d+)\s*:\s*(\d+)(?:\s*-\s*(\d+))?$/);
+    if (!match) {
+        throw new Error(`无法解析经文出处: ${reference}`);
+    }
+
+    const chapter = Number(match[2]);
+    const verseStart = Number(match[3]);
+    const verseEnd = match[4] ? Number(match[4]) : verseStart;
+    if (!chapter || !verseStart) {
+        throw new Error(`经文出处缺失章/节: ${reference}`);
+    }
+
+    return {
+        book: normalizeBookName(match[1]),
+        chapter,
+        verseStart,
+        verseEnd: Math.max(verseStart, verseEnd)
+    };
+}
+
+/**
+ * 归一化出处显示文本：统一卷名、去掉多余空格
+ * @param {{book:string, chapter:number, verseStart:number, verseEnd:number}} parsed
+ * @returns {string}
+ */
+function formatReference(parsed) {
+    const range = parsed.verseStart === parsed.verseEnd
+        ? String(parsed.verseStart)
+        : `${parsed.verseStart}-${parsed.verseEnd}`;
+    return `${parsed.book} ${parsed.chapter}:${range}`;
+}
+
 function generateCards() {
     const versesFile = path.join(__dirname, '..', 'data', 'verses-categorized.json');
     const cardsFile = path.join(__dirname, '..', 'src', 'data', 'cards.js');
@@ -51,14 +100,19 @@ function generateCards() {
     
     for (const [category, verses] of Object.entries(versesData)) {
         for (const verse of verses) {
+            const parsed = parseReference(verse.reference);
             cards.push({
                 id: id++,
                 category: categoryNames[category],
                 categoryEn: category,
                 icon: categoryIcons[category],
                 color: categoryColors[category],
-                reference: verse.reference,
+                reference: formatReference(parsed),
                 text: verse.text,
+                book: parsed.book,
+                chapter: parsed.chapter,
+                verseStart: parsed.verseStart,
+                verseEnd: parsed.verseEnd,
                 question: `这节关于"${categoryNames[category]}"的经文如何触动你的心？`
             });
         }

@@ -22,7 +22,10 @@
   - `storage-migration.js` localStorage key 定义与旧数据迁移
   - `daily-verse-service.js` 每日经文（打开页面时随机，会话内保持）
   - `verse-search-service.js` 全本检索（动态 import）
-- `src/ui/`：渲染（`render.js`、`stats-render.js`、`daily-verse-render.js`、`verse-note-render.js`）
+  - `reference-utils.js` 出处解析与卷名归一化（「啟示录」→「启示录」）
+  - `verse-context-service.js` 按出处取整章上下文（复用全本按需加载）
+  - `verse-text.js` 显示层剥离〔…〕编者注（数据源不动）
+- `src/ui/`：渲染（`render.js`、`stats-render.js`、`daily-verse-render.js`、`verse-note-render.js`、`verse-context-render.js`）
 - `src/data/cards.js`：1000 条精选金句（首屏用）
 - `src/data/bible-full.js`：全本 31105 节，**自动生成，勿手改**
 - `src/app.bundle.js`：**自动生成，勿手改**，供 `file://` 使用
@@ -42,6 +45,7 @@
 ```bash
 python -m http.server 8921        # 本地预览
 node scripts/check-ui-chinese.js  # 界面文案英文检查
+node scripts/check-context-refs.mjs  # 校验 1000 条出处可定位、编者注已剥离
 node scripts/build-bundle.js      # 改动 src/ 后重新生成 file:// bundle
 node scripts/build-bible-full.js  # 从 books.txt 重新生成全本模块
 python ../scripts/bump_sw_cache.py sw.js .   # 改动任一预缓存资源后重算缓存指纹

@@ -758,6 +758,87 @@ header p {
     min-width: 92px;
 }
 
+/* 经文上下文弹层 */
+.context-modal-content {
+    display: flex;
+    flex-direction: column;
+    max-height: min(82vh, 760px);
+}
+
+.context-modal-content h3 {
+    flex: 0 0 auto;
+    margin-bottom: 8px;
+}
+
+.context-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 4px;
+    margin-bottom: 12px;
+    color: var(--text-primary);
+    scrollbar-width: thin;
+}
+
+.context-subtitle {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+
+.context-verses {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.context-verse {
+    display: flex;
+    gap: 8px;
+    padding: 5px 8px;
+    border-left: 3px solid transparent;
+    border-radius: 6px;
+    line-height: 1.75;
+    font-size: 0.95rem;
+}
+
+.context-verse.highlighted {
+    background: rgba(194, 122, 58, 0.12);
+    border-left-color: var(--accent);
+}
+
+.context-verse-num {
+    flex: 0 0 auto;
+    min-width: 1.6em;
+    text-align: right;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    line-height: 1.9;
+    user-select: none;
+}
+
+.context-verse.highlighted .context-verse-num {
+    color: var(--accent-strong);
+    font-weight: 600;
+}
+
+.context-status {
+    padding: 24px 8px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.context-status-error {
+    color: var(--danger);
+}
+
+@media (max-width: 640px) {
+    .context-modal-content {
+        max-height: 86vh;
+    }
+}
+
 .share-preview {
     border: 1px solid #e4c9a9;
     border-radius: 14px;

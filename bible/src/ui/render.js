@@ -1,4 +1,5 @@
 ﻿import { getCardThemeId } from '../core/card-service.js';
+import { stripEditorialNotes } from '../core/verse-text.js';
 
 function createElement(tag, className, text) {
     const node = document.createElement(tag);
@@ -15,6 +16,7 @@ export function renderCard({ currentCard, categoryNames, elements }) {
         cardLevel,
         cardQuestion,
         saveBtn,
+        contextBtn,
         shareBtn
     } = elements;
 
@@ -22,6 +24,7 @@ export function renderCard({ currentCard, categoryNames, elements }) {
         emptyState.style.display = 'block';
         cardContent.style.display = 'none';
         saveBtn.style.display = 'none';
+        if (contextBtn) contextBtn.style.display = 'none';
         shareBtn.style.display = 'none';
         return;
     }
@@ -35,13 +38,14 @@ export function renderCard({ currentCard, categoryNames, elements }) {
     cardLevel.textContent = currentCard.reference || '';
     cardLevel.className = 'card-level verse-reference-label';
 
-    // 正文显示经文原文
+    // 正文显示经文原文；〔…〕编者注只在显示层剥离，数据源不动
     cardQuestion.innerHTML = `
-        <div class="verse-text">${escapeHtml(currentCard.text)}</div>
+        <div class="verse-text">${escapeHtml(stripEditorialNotes(currentCard.text))}</div>
         <div class="verse-reference">${escapeHtml(currentCard.reference)}</div>
     `;
 
     saveBtn.style.display = 'inline-block';
+    if (contextBtn) contextBtn.style.display = 'inline-block';
     shareBtn.style.display = 'inline-block';
 }
 
@@ -114,7 +118,7 @@ export function renderHistory({ history, categoryNames, historyList, onEdit, onD
 
         // 经文原文 + 我的感受
         if (card.text) {
-            wrapper.appendChild(createElement('div', 'question verse-text', card.text));
+            wrapper.appendChild(createElement('div', 'question verse-text', stripEditorialNotes(card.text)));
             wrapper.appendChild(createElement('div', 'verse-reference', card.reference ? `—— ${card.reference}` : ''));
         } else if (card.reference) {
             wrapper.appendChild(createElement('div', 'verse-reference', `—— ${card.reference}`));
