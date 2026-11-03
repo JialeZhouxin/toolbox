@@ -156,6 +156,41 @@
             letter-spacing: 0.2em;
         }
 
+        /* 经典游戏：规则文本较长，统一一个左对齐、可滚动的版式 */
+        .card-container.game-mode { justify-content: flex-start; }
+        .card-content.game {
+            font-family: 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+            font-size: 0.98rem;
+            line-height: 1.8;
+            text-align: left;
+            max-height: min(58vh, 520px);
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            padding-right: 8px;
+            scrollbar-width: thin;
+        }
+        .game-title {
+            font-family: 'Noto Serif SC', 'Songti SC', serif;
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: #5c3d24;
+            margin-bottom: 6px;
+        }
+        .game-summary { color: #7a5a3c; font-size: 0.95rem; margin-bottom: 10px; }
+        .game-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+        .game-meta span {
+            background: #fff3e2;
+            border: 1px solid #e8cbaa;
+            color: #8a5f39;
+            border-radius: 999px;
+            padding: 3px 10px;
+            font-size: 0.82rem;
+            line-height: 1.5;
+        }
+        .game-rules { border-top: 1px dashed #e3c6a6; padding-top: 12px; }
+        .game-rules p { margin: 0 0 0.7em; }
+        .game-rules p:last-child { margin-bottom: 0; }
+
         .card-hint {
             margin-top: 16px;
             color: var(--text-muted);
@@ -219,6 +254,9 @@
             .card-content { font-size: clamp(1.12rem, 4.7vw, 1.35rem); line-height: 1.66; }
             .card-content.word { font-size: clamp(1.4rem, 6vw, 1.9rem); }
             .btn { width: 100%; min-height: 46px; padding-top: 11px; padding-bottom: 11px; }
+            /* 顶部返回链接与主题按钮并排，按钮不撑满整行 */
+            .theme-toggle-btn { width: auto; flex: 0 0 auto; }
+            .back-link { white-space: nowrap; }
             .controls { flex-direction: column; align-items: stretch; gap: 8px; }
             .filter-btn { min-height: 44px; padding: 8px 14px; }
         }
@@ -244,6 +282,14 @@
         :root[data-theme='dark'] .card-content { color: #f7e7d2; }
         :root[data-theme='dark'] .card-content.masked { color: #7d6853; }
         :root[data-theme='dark'] .card-category { color: #d4b493; }
+        :root[data-theme='dark'] .game-title { color: #f3e2cc; }
+        :root[data-theme='dark'] .game-summary { color: #d9b998; }
+        :root[data-theme='dark'] .game-meta span {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.16);
+            color: #e0c3a2;
+        }
+        :root[data-theme='dark'] .game-rules { border-top-color: rgba(255, 255, 255, 0.14); }
     </style>
 </head>
 <body>
@@ -262,11 +308,12 @@
                 <button class="filter-btn" data-mode="team">默契测试</button>
                 <button class="filter-btn" data-mode="liar">两真一假</button>
                 <button class="filter-btn" data-mode="draw">你画我猜</button>
+                <button class="filter-btn" data-mode="classic">经典游戏</button>
             </div>
             <div class="filter-buttons" id="categoryFilters" style="margin-top: 12px;"></div>
         </div>
         <div class="progress" id="progress"></div>
-        <div class="card-container">
+        <div class="card-container" id="cardContainer">
             <div class="card-category" id="cardCategory"></div>
             <div class="card-content" id="cardContent"></div>
             <div class="card-hint" id="cardHint"></div>
@@ -275,7 +322,10 @@
             <button class="btn btn-secondary" id="revealBtn" style="display:none;">我是画手，查看词语</button>
             <button class="btn" id="nextBtn">换一个</button>
         </div>
-        <div class="footer-note">轮流抽题回答，答完自动打乱再来一轮</div>
+        <div class="footer-note">
+            轮流抽题回答，答完自动打乱再来一轮<br>
+            经典游戏选自梁廷益《破冰游戏（第一集）》（1998），由扫描件识别整理
+        </div>
     </div>
     <script>
         const TOPICS = {
@@ -373,6 +423,14 @@
         const CATS = {
             card: [["all", "全部"], ["light", "轻松热场"], ["deep", "深入走心"], ["funny", "搞怪无厘头"]],
             draw: [["all", "全部"], ["easy", "简单 · 物品"], ["mid", "中等 · 动作"], ["hard", "困难 · 成语"]],
+            classic: [
+                ["all", "全部"],
+                ["A", "A 认识探索期"],
+                ["B", "B 冲突变迁期"],
+                ["C", "C 合群外展期"],
+                ["D", "D 倍增退修期"],
+                ["E", "E 其它"],
+            ],
         };
         const CAT_LABEL = {
             card: { all: "随机话题", light: "轻松热场", deep: "深入走心", funny: "搞怪无厘头" },
@@ -383,7 +441,8 @@
         let cat = "all";
         let revealed = false;
         let currentWord = null;
-        const queues = { card: {}, team: [], liar: [], draw: {} };
+        const queues = { card: {}, team: [], liar: [], draw: {}, classic: {} };
+        let classicLoading = null;
 
         // 夜间护眼模式（与各工具一致）
         function applyTheme(theme) {
@@ -429,9 +488,77 @@
             return word.replace(/[^\s]/g, "？");
         }
 
+        // 经典游戏数据（132 个）体积较大，首次使用某个模式时才载入
+        function loadClassicData() {
+            if (window.ICEBREAKER_GAMES) return Promise.resolve(window.ICEBREAKER_GAMES);
+            if (classicLoading) return classicLoading;
+            classicLoading = new Promise((resolve, reject) => {
+                const script = document.createElement("script");
+                script.src = "data/classic-games.js";
+                script.async = true;
+                script.onload = () => window.ICEBREAKER_GAMES
+                    ? resolve(window.ICEBREAKER_GAMES)
+                    : reject(new Error("data missing"));
+                script.onerror = () => reject(new Error("load failed"));
+                document.head.appendChild(script);
+            });
+            classicLoading.catch(() => { classicLoading = null; });
+            return classicLoading;
+        }
+
+        const esc = (s) => String(s).replace(/[&<>"']/g, (c) => (
+            { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+        ));
+
+        const CLASSIC_CAT_NAMES = {
+            A: "A. 认识探索期", B: "B. 冲突变迁期", C: "C. 合群外展期",
+            D: "D. 倍增退修期", E: "E. 其它",
+        };
+
+        function renderClassic(game) {
+            const chips = [];
+            if (game.time) chips.push("⏱ " + game.time);
+            if (game.materials) chips.push("🧰 " + game.materials);
+            const rules = String(game.rules || "").split(/\n{2,}/).filter((p) => p.trim())
+                .map((p) => `<p>${esc(p.trim())}</p>`).join("");
+            $("cardCategory").textContent = `${CLASSIC_CAT_NAMES[game.cat] || ""} · 第 ${game.num} 个 · 原书 p.${game.page}`;
+            $("cardContent").className = "card-content game";
+            $("cardContent").innerHTML =
+                `<div class="game-title">${esc(game.title)}</div>` +
+                (game.summary ? `<div class="game-summary">${esc(game.summary)}</div>` : "") +
+                (chips.length ? `<div class="game-meta">${chips.map((c) => `<span>${esc(c)}</span>`).join("")}</div>` : "") +
+                `<div class="game-rules">${rules}</div>`;
+            $("cardHint").textContent = "规则来自扫描件自动识别，个别字词可能有误 · 繁体为原书用字";
+            $("cardContainer").classList.add("game-mode");
+            $("cardContent").scrollTop = 0;
+        }
+
         function next() {
             revealed = false;
-            if (mode === "card") {
+            $("cardContainer").classList.remove("game-mode");
+            if (mode === "classic") {
+                if (!window.ICEBREAKER_GAMES) {
+                    $("cardCategory").textContent = "经典游戏";
+                    $("cardContent").className = "card-content";
+                    $("cardContent").textContent = "正在载入游戏规则…";
+                    $("cardHint").textContent = "";
+                    $("progress").textContent = "";
+                    loadClassicData().then(() => {
+                        if (mode === "classic") next();
+                    }).catch(() => {
+                        $("cardContent").textContent = "游戏数据载入失败，请刷新页面重试";
+                        $("cardHint").textContent = "";
+                    });
+                    return;
+                }
+                const all = window.ICEBREAKER_GAMES;
+                const pool = cat === "all" ? all : all.filter((g) => g.cat === cat);
+                if (!queues.classic[cat] || !queues.classic[cat].length) {
+                    queues.classic[cat] = shuffle(pool.slice());
+                }
+                renderClassic(queues.classic[cat].pop());
+                $("progress").textContent = `第 ${pool.length - queues.classic[cat].length} / ${pool.length} 个`;
+            } else if (mode === "card") {
                 const pool = cat === "all" ? [...TOPICS.light, ...TOPICS.deep, ...TOPICS.funny] : TOPICS[cat];
                 if (!queues.card[cat] || !queues.card[cat].length) queues.card[cat] = shuffle(pool.slice());
                 const item = queues.card[cat].pop();
